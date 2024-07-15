@@ -18,6 +18,9 @@ async def main():
         available_features = await polar_device.available_features()
         rich.inspect(available_features)
 
+        for feature in available_features:
+            rich.print(await polar_device.request_stream_settings(feature))
+
 
 if __name__ == "__main__":
     asyncio.run(main())

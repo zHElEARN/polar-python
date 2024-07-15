@@ -105,7 +105,7 @@ def handle_pmd_data(sender, data):
 
 
 async def main():
-    device = await BleakScanner.find_device_by_filter(lambda bd, ad: "Polar H10" in bd.name, timeout=5)
+    device = await BleakScanner.find_device_by_filter(lambda bleDevice, advertisementData: "Polar H10" in bleDevice.name, timeout=5)
     if device is None:
         print("device is none")
         return
