@@ -43,3 +43,22 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
         more_frames=more_frames,
         settings=settings
     )
+
+
+def build_measurement_settings(measurement_settings: constants.MeasurementSettings) -> bytearray:
+    data = bytearray()
+    data.append(constants.PMD_CONTROL_OPERATION_CODE["START"])
+
+    measurement_type_index = constants.PMD_MEASUREMENT_TYPES.index(measurement_settings.measurement_type)
+    data.append(measurement_type_index)
+
+    for setting in measurement_settings.settings:
+        setting_type_index = constants.PMD_SETTING_TYPES.index(setting.type)
+        data.append(setting_type_index)
+
+        data.append(setting.array_length)
+
+        for value in setting.values:
+            data.extend(value.to_bytes(2, 'little'))
+
+    return data

@@ -41,9 +41,14 @@ class PolarDevice:
         return utils.parse_pmd_data(await self._queue_pmd_control.get())
         
 
+    async def start_stream(self, settings: constants.MeasurementSettings) -> None:
+        data = utils.build_measurement_settings(settings)
+
+        await self.client.write_gatt_char(constants.PMD_CONTROL_POINT_UUID, data)
+
     def _handle_pmd_control(self, sender, data):
         self._queue_pmd_control.put_nowait(data)
 
     def _handle_pmd_data(self, sender, data):
-        pass
+        print(list(data))
         

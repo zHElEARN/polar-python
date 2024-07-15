@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List
+from typing import List, Optional
 
 HEART_RATE_CHAR_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
 PMD_CONTROL_POINT_UUID = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
@@ -57,6 +57,6 @@ class SettingType:
 @dataclass
 class MeasurementSettings:
     measurement_type: str
-    error_code: str
-    more_frames: bool
     settings: List[SettingType]
+    error_code: Optional[str] = None
+    more_frames: Optional[bool] = None
