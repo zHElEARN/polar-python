@@ -132,6 +132,8 @@ async def main():
 
         print(f"supported features: {support_features}")
         print()
+        
+        print(f"mtu_size: {client.mtu_size}")
 
         # request stream settings
         print("request stream settings")
