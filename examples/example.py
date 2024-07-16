@@ -69,8 +69,14 @@ async def main():
         await polar_device.start_stream(ecg_settings)
         await polar_device.start_stream(acc_settings)
 
-        # Keep the stream running for 120 seconds
-        await asyncio.sleep(120)
+        # Keep the stream running for 60 seconds
+        await asyncio.sleep(60)
+
+        # Stop data stream for ECG
+        await polar_device.stop_stream("ECG")
+
+        # Keep the stream running for 60 seconds
+        await asyncio.sleep(60)
 
 
 if __name__ == "__main__":
