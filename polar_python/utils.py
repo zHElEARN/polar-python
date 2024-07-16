@@ -1,4 +1,5 @@
 from . import constants
+from typing import List
 
 
 def byte_to_bitmap(byte: int) -> list[bool]:
@@ -62,3 +63,46 @@ def build_measurement_settings(measurement_settings: constants.MeasurementSettin
             data.extend(value.to_bytes(2, 'little'))
 
     return data
+
+def parse_ecg_data(data: List[int], timestamp: int) -> constants.ECGData:
+    ecg_data = []
+    for i in range(10, len(data), 3):
+        value = int.from_bytes(data[i:i+3], byteorder='little', signed=True)
+        ecg_data.append(value)
+    return constants.ECGData(timestamp=timestamp, data=ecg_data)
+
+def parse_acc_data(data: List[int], timestamp: int, frame_type: int) -> constants.ACCData:
+    acc_data = []
+    if frame_type == 0x00:
+        for i in range(10, len(data), 3):
+            x = int.from_bytes(data[i:i+1], byteorder='little', signed=True)
+            y = int.from_bytes(data[i+1:i+2], byteorder='little', signed=True)
+            z = int.from_bytes(data[i+2:i+3], byteorder='little', signed=True)
+            acc_data.append((x, y, z))
+    elif frame_type == 0x01:
+        for i in range(10, len(data), 6):
+            x = int.from_bytes(data[i:i+2], byteorder='little', signed=True)
+            y = int.from_bytes(data[i+2:i+4], byteorder='little', signed=True)
+            z = int.from_bytes(data[i+4:i+6], byteorder='little', signed=True)
+            acc_data.append((x, y, z))
+    elif frame_type == 0x02:
+        for i in range(10, len(data), 9):
+            x = int.from_bytes(data[i:i+3], byteorder='little', signed=True)
+            y = int.from_bytes(data[i+3:i+6], byteorder='little', signed=True)
+            z = int.from_bytes(data[i+6:i+9], byteorder='little', signed=True)
+            acc_data.append((x, y, z))
+    return constants.ACCData(timestamp=timestamp, data=acc_data)
+
+def parse_bluetooth_data(data: List[int]):
+    data_type_index = data[0]
+    data_type = constants.PMD_MEASUREMENT_TYPES[data_type_index]
+    
+    timestamp = int.from_bytes(data[1:9], byteorder='little') + constants.TIMESTAMP_OFFSET
+    frame_type = data[9]
+    
+    if data_type == "ECG":
+        return parse_ecg_data(data, timestamp)
+    elif data_type == "ACC":
+        return parse_acc_data(data, timestamp, frame_type)
+    else:
+        raise ValueError(f"Unsupported data type: {data_type}")

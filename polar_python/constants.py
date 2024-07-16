@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import List, Optional, Tuple
 
 HEART_RATE_CHAR_UUID = "00002a37-0000-1000-8000-00805f9b34fb"
 PMD_CONTROL_POINT_UUID = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
@@ -46,6 +46,8 @@ PMD_SETTING_TYPES = [
     'CHANNELS'
 ]
 
+TIMESTAMP_OFFSET = 946684800000000000
+
 
 @dataclass
 class SettingType:
@@ -60,3 +62,15 @@ class MeasurementSettings:
     settings: List[SettingType]
     error_code: Optional[str] = None
     more_frames: Optional[bool] = None
+
+
+@dataclass
+class ACCData:
+    timestamp: int
+    data: List[Tuple[int, int, int]]
+
+
+@dataclass
+class ECGData:
+    timestamp: int
+    data: List[int]

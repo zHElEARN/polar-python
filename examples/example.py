@@ -1,8 +1,10 @@
 import asyncio
 import rich
 from bleak import BleakScanner
+from typing import Union
+from rich.console import Console
 
-from polar_python import PolarDevice, MeasurementSettings, SettingType
+from polar_python import PolarDevice, MeasurementSettings, SettingType, ECGData, ACCData
 
 
 async def main():
@@ -13,7 +15,10 @@ async def main():
 
     rich.inspect(device)
 
-    async with PolarDevice(device) as polar_device:
+    def data_callback(data: Union[ECGData, ACCData]):
+        rich.print(f"{data}")
+
+    async with PolarDevice(device, data_callback) as polar_device:
         available_features = await polar_device.available_features()
         rich.inspect(available_features)
 
@@ -25,10 +30,17 @@ async def main():
             settings=[SettingType(type="SAMPLE_RATE", array_length=1, values=[
                                   130]), SettingType(type="RESOLUTION", array_length=1, values=[14])]
         )
-        
-        await polar_device.start_stream(ecg_settings)
 
-        await asyncio.sleep(60)
+        acc_settings = MeasurementSettings(
+            measurement_type="ACC",
+            settings=[SettingType(type="SAMPLE_RATE", array_length=1, values=[25]), SettingType(
+                type="RESOLUTION", array_length=1, values=[16]), SettingType(type="RANGE", array_length=1, values=[2])]
+        )
+
+        await polar_device.start_stream(ecg_settings)
+        await polar_device.start_stream(acc_settings)
+
+        await asyncio.sleep(120)
 
 if __name__ == "__main__":
     asyncio.run(main())

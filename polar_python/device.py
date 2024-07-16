@@ -1,15 +1,17 @@
 import asyncio
 from bleak import BleakClient
 from bleak.backends.device import BLEDevice
-from typing import Union
+from bleak.backends.characteristic import BleakGATTCharacteristic
+from typing import Union, Callable
 
 from . import constants, exceptions, utils
 
 
 class PolarDevice:
-    def __init__(self, address_or_ble_device: Union[str, BLEDevice]) -> None:
+    def __init__(self, address_or_ble_device: Union[str, BLEDevice], data_callback: Callable[[Union[constants.ECGData, constants.ACCData]], None] = None) -> None:
         self.client = BleakClient(address_or_ble_device)
         self._queue_pmd_control = asyncio.Queue()
+        self._data_callback = data_callback
 
     async def connect(self) -> None:
         await self.client.connect()
@@ -46,9 +48,11 @@ class PolarDevice:
 
         await self.client.write_gatt_char(constants.PMD_CONTROL_POINT_UUID, data)
 
-    def _handle_pmd_control(self, sender, data):
+    def _handle_pmd_control(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
         self._queue_pmd_control.put_nowait(data)
 
-    def _handle_pmd_data(self, sender, data):
-        print(list(data))
-        
+    def _handle_pmd_data(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
+        parsed_data = utils.parse_bluetooth_data(data)
+        if self._data_callback:
+            self._data_callback(parsed_data)
+
