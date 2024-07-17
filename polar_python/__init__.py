@@ -1,5 +1,5 @@
 from .device import PolarDevice
-from .constants import MeasurementSettings, SettingType, ECGData, ACCData
+from .constants import MeasurementSettings, SettingType, ECGData, ACCData, HRData
 
 __all__ = [
     "PolarDevice",
@@ -7,4 +7,5 @@ __all__ = [
     "SettingType"
     "ECGData",
     "ACCData"
+    "HRData"
 ]

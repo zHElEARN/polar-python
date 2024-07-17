@@ -106,3 +106,17 @@ def parse_bluetooth_data(data: List[int]):
         return parse_acc_data(data, timestamp, frame_type)
     else:
         raise ValueError(f"Unsupported data type: {data_type}")
+    
+def parse_heartrate_data(data):
+    heartrate = int.from_bytes(data[1:2], byteorder="little", signed=False)
+    rr_intervals = []
+
+    if len(list(data)) > 2:
+        offset = 2
+        while offset < len(list(data)):
+            rr_interval_raw = int.from_bytes(data[offset:offset+2], byteorder="little", signed=False)
+            rr_intervals.append(rr_interval_raw / 1024.0 * 1024.0)
+
+            offset += 2
+
+    return constants.HRData(heartrate, rr_intervals)

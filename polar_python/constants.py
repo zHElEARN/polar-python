@@ -74,3 +74,9 @@ class ACCData:
 class ECGData:
     timestamp: int
     data: List[int]
+
+
+@dataclass
+class HRData:
+    heartrate: int
+    rr_intervals: List[float]

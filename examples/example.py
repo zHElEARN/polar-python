@@ -4,7 +4,7 @@ from bleak import BleakScanner
 from rich.console import Console
 from rich import inspect
 
-from polar_python import PolarDevice, MeasurementSettings, SettingType, ECGData, ACCData
+from polar_python import PolarDevice, MeasurementSettings, SettingType, ECGData, ACCData, HRData
 
 # Initialize Rich Console
 console = Console()
@@ -13,7 +13,7 @@ console = Console()
 async def main():
     """
     Main function to connect to a Polar device, query its features,
-    set measurement settings, and start data streaming.
+    set measurement settings, and start data streaming.  
     """
     # Find the Polar H10 device
     device = await BleakScanner.find_device_by_filter(
@@ -26,6 +26,9 @@ async def main():
     # Inspect the device details
     inspect(device)
 
+    def heartrate_callback(data: HRData):
+        console.print(f"[bold green]Received Data:[/bold green] {data}")
+
     def data_callback(data: Union[ECGData, ACCData]):
         """
         Callback function to handle incoming data from the Polar device.
@@ -36,7 +39,7 @@ async def main():
         console.print(f"[bold green]Received Data:[/bold green] {data}")
 
     # Establish connection to the Polar device
-    async with PolarDevice(device, data_callback) as polar_device:
+    async with PolarDevice(device, data_callback, heartrate_callback) as polar_device:
         # Query available features
         available_features = await polar_device.available_features()
         inspect(available_features)
@@ -68,6 +71,9 @@ async def main():
         # Start data streams for ECG and ACC
         await polar_device.start_stream(ecg_settings)
         await polar_device.start_stream(acc_settings)
+
+        # Start data stream for HeartRate
+        await polar_device.start_heartrate_stream()
 
         # Keep the stream running for 60 seconds
         await asyncio.sleep(60)

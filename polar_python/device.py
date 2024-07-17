@@ -8,10 +8,11 @@ from . import constants, exceptions, utils
 
 
 class PolarDevice:
-    def __init__(self, address_or_ble_device: Union[str, BLEDevice], data_callback: Callable[[Union[constants.ECGData, constants.ACCData]], None] = None) -> None:
+    def __init__(self, address_or_ble_device: Union[str, BLEDevice], data_callback: Callable[[Union[constants.ECGData, constants.ACCData]], None] = None, heartrate_callback: Callable[[constants.HRData], None] = None) -> None:
         self.client = BleakClient(address_or_ble_device)
         self._queue_pmd_control = asyncio.Queue()
         self._data_callback = data_callback
+        self._heartrate_callback = heartrate_callback
 
     async def connect(self) -> None:
         await self.client.connect()
@@ -50,6 +51,12 @@ class PolarDevice:
     async def stop_stream(self, measurement_type: str) -> None:
         await self.client.write_gatt_char(constants.PMD_CONTROL_POINT_UUID, bytearray([constants.PMD_CONTROL_OPERATION_CODE["STOP"], constants.PMD_MEASUREMENT_TYPES.index(measurement_type)]))
 
+    async def start_heartrate_stream(self) -> None:
+        await self.client.start_notify(constants.HEART_RATE_CHAR_UUID, self._handle_heartrate_measurement)
+
+    async def stop_heartrate_stream(self) -> None:
+        await self.client.stop_notify(constants.HEART_RATE_CHAR_UUID)
+
     def _handle_pmd_control(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
         self._queue_pmd_control.put_nowait(data)
 
@@ -57,4 +64,9 @@ class PolarDevice:
         parsed_data = utils.parse_bluetooth_data(data)
         if self._data_callback:
             self._data_callback(parsed_data)
+
+    def _handle_heartrate_measurement(self, sender: BleakGATTCharacteristic, data: bytearray) -> None:
+        parsed_data = utils.parse_heartrate_data(data)
+        if self._heartrate_callback:
+            self._heartrate_callback(parsed_data)
 
