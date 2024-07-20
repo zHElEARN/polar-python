@@ -3,9 +3,9 @@ from .constants import MeasurementSettings, SettingType, ECGData, ACCData, HRDat
 
 __all__ = [
     "PolarDevice",
-    "MeasurementSettings"
-    "SettingType"
+    "MeasurementSettings",
+    "SettingType",
     "ECGData",
-    "ACCData"
-    "HRData"
+    "ACCData",
+    "HRData",
 ]
