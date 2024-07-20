@@ -11,25 +11,11 @@
 
 ## Installation
 
-Since `polar-python` is not yet available on PyPI, you can install it locally by following these steps:
+You can install `polar-python` from PyPI using pip:
 
-1. Clone the repository:
-
-    ```sh
-    git clone https://github.com/yourusername/polar-python.git
-    ```
-
-2. Navigate to the project directory:
-
-    ```sh
-    cd polar-python
-    ```
-
-3. Install the package using pip:
-
-    ```sh
-    pip install .
-    ```
+```sh
+pip install polar-python
+```
 
 ## Usage
 
