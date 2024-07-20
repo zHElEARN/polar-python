@@ -1,4 +1,6 @@
 import asyncio
+import signal
+import threading
 from typing import Union
 from bleak import BleakScanner
 from rich.console import Console
@@ -9,6 +11,15 @@ from polar_python import PolarDevice, MeasurementSettings, SettingType, ECGData,
 # Initialize Rich Console
 console = Console()
 
+# Event to signal exit
+exit_event = threading.Event()
+
+def handle_exit(signum, frame):
+    """
+    Handle the exit signal to set the exit event.
+    """
+    console.print("[bold red]Received exit signal[/bold red]")
+    exit_event.set()
 
 async def main():
     """
@@ -75,15 +86,19 @@ async def main():
         # Start data stream for HeartRate
         await polar_device.start_heartrate_stream()
 
-        # Keep the stream running for 60 seconds
-        await asyncio.sleep(60)
-
-        # Stop data stream for ECG
-        await polar_device.stop_stream("ECG")
-
-        # Keep the stream running for 60 seconds
-        await asyncio.sleep(60)
-
+        # Keep the stream running indefinitely until exit_event is set
+        while not exit_event.is_set():
+            await asyncio.sleep(1)
 
 if __name__ == "__main__":
-    asyncio.run(main())
+    # Set up signal handlers
+    signal.signal(signal.SIGINT, handle_exit)
+    signal.signal(signal.SIGTERM, handle_exit)
+
+    # Run the main function
+    loop = asyncio.get_event_loop()
+    try:
+        loop.run_until_complete(main())
+    finally:
+        loop.close()
+        console.print("[bold red]Program exited gracefully[/bold red]")
