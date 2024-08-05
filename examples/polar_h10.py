@@ -37,20 +37,8 @@ async def main():
     # Inspect the device details
     inspect(device)
 
-    def heartrate_callback(data: HRData):
-        console.print(f"[bold green]Received Data:[/bold green] {data}")
-
-    def data_callback(data: Union[ECGData, ACCData]):
-        """
-        Callback function to handle incoming data from the Polar device.
-
-        Args:
-            data (Union[ECGData, ACCData]): The data received from the Polar device.
-        """
-        console.print(f"[bold green]Received Data:[/bold green] {data}")
-
     # Establish connection to the Polar device
-    async with PolarDevice(device, data_callback, heartrate_callback) as polar_device:
+    async with PolarDevice(device) as polar_device:
         # Query available features
         available_features = await polar_device.available_features()
         inspect(available_features)
@@ -78,6 +66,20 @@ async def main():
                 SettingType(type="RANGE", array_length=1, values=[2]),
             ],
         )
+
+        def heartrate_callback(data: HRData):
+            console.print(f"[bold green]Received Data:[/bold green] {data}")
+
+        def data_callback(data: Union[ECGData, ACCData]):
+            """
+            Callback function to handle incoming data from the Polar device.
+
+            Args:
+                data (Union[ECGData, ACCData]): The data received from the Polar device.
+            """
+            console.print(f"[bold green]Received Data:[/bold green] {data}")
+
+        polar_device.set_callback(data_callback, heartrate_callback)
 
         # Start data streams for ECG and ACC
         await polar_device.start_stream(ecg_settings)

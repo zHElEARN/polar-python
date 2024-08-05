@@ -148,6 +148,16 @@ class PolarDevice:
                 f"Failed to stop heart rate stream: {str(e)}"
             ) from e
 
+    def set_callback(
+        self,
+        data_callback: Callable[
+            [Union[constants.ECGData, constants.ACCData]], None
+        ] = None,
+        heartrate_callback: Callable[[constants.HRData], None] = None,
+    ) -> None:
+        self._data_callback = data_callback
+        self._heartrate_callback = heartrate_callback
+
     def _handle_pmd_control(
         self, sender: BleakGATTCharacteristic, data: bytearray
     ) -> None:
