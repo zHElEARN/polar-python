@@ -5,7 +5,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="polar-python",
-    version="0.0.3",
+    version="0.0.4",
     packages=find_packages(),
     install_requires=["bleak"],
     author="Zhe_Learn",
