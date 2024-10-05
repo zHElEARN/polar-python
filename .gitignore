@@ -106,3 +106,5 @@ local_env/
 
 # VS Code settings
 .vscode/
+
+*.npy
