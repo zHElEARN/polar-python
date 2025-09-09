@@ -61,7 +61,9 @@ async def main():
         ecg_settings = MeasurementSettings(
             measurement_type="ECG",
             settings=[
+                # SAMPLE_RATE options: 130 Hz
                 SettingType(type="SAMPLE_RATE", values=[130]),
+                # RESOLUTION options: 14
                 SettingType(type="RESOLUTION", values=[14]),
             ],
         )
@@ -70,8 +72,11 @@ async def main():
         acc_settings = MeasurementSettings(
             measurement_type="ACC",
             settings=[
+                # SAMPLE_RATE options: 25, 50, 100, 200 Hz
                 SettingType(type="SAMPLE_RATE", values=[25]),
+                # RESOLUTION options: 16
                 SettingType(type="RESOLUTION", values=[16]),
+                # RANGE options: 2, 4, 8 G
                 SettingType(type="RANGE", values=[2]),
             ],
         )
