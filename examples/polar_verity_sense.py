@@ -14,6 +14,7 @@ from polar_python import (
     ACCData,
     HRData,
 )
+from polar_python.constants import PPIData
 
 console = Console()
 
@@ -60,7 +61,7 @@ async def main():
         def heartrate_callback(data: HRData):
             console.print(f"[bold green]Received Data:[/bold green] {data}")
 
-        def data_callback(data: Union[ECGData, ACCData]):
+        def data_callback(data: Union[ECGData, ACCData, PPIData]):
             console.print(f"[bold green]Received Data:[/bold green] {data}")
 
         polar_device.set_callback(data_callback, heartrate_callback)

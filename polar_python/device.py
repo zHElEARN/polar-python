@@ -12,7 +12,7 @@ class PolarDevice:
         self,
         address_or_ble_device: Union[str, BLEDevice],
         data_callback: Callable[
-            [Union[constants.ECGData, constants.ACCData]], None
+            [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
         ] = None,
         heartrate_callback: Callable[[constants.HRData], None] = None,
     ) -> None:
@@ -151,7 +151,7 @@ class PolarDevice:
     def set_callback(
         self,
         data_callback: Callable[
-            [Union[constants.ECGData, constants.ACCData]], None
+            [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
         ] = None,
         heartrate_callback: Callable[[constants.HRData], None] = None,
     ) -> None:

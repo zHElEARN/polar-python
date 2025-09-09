@@ -317,7 +317,7 @@ def parse_delta_frame(
 
 def parse_bluetooth_data(
     data: List[int],
-) -> Union[constants.ECGData, constants.ACCData]:
+) -> Union[constants.ECGData, constants.ACCData, constants.PPIData]:
     """Parse Bluetooth data and return the appropriate data type."""
     try:
         data_type_index = data[0]
