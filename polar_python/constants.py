@@ -42,8 +42,12 @@ class SettingType:
     """Represents a setting type with its array length and possible values."""
 
     type: str
-    array_length: int
     values: List[int]
+
+    @property
+    def array_length(self) -> int:
+        """Calculate array length from the values list."""
+        return len(self.values)
 
 
 @dataclass

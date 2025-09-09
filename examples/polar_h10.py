@@ -6,13 +6,21 @@ from bleak import BleakScanner
 from rich.console import Console
 from rich import inspect
 
-from polar_python import PolarDevice, MeasurementSettings, SettingType, ECGData, ACCData, HRData
+from polar_python import (
+    PolarDevice,
+    MeasurementSettings,
+    SettingType,
+    ECGData,
+    ACCData,
+    HRData,
+)
 
 # Initialize Rich Console
 console = Console()
 
 # Event to signal exit
 exit_event = threading.Event()
+
 
 def handle_exit(signum, frame):
     """
@@ -21,10 +29,11 @@ def handle_exit(signum, frame):
     console.print("[bold red]Received exit signal[/bold red]")
     exit_event.set()
 
+
 async def main():
     """
     Main function to connect to a Polar device, query its features,
-    set measurement settings, and start data streaming.  
+    set measurement settings, and start data streaming.
     """
     # Find the Polar H10 device
     device = await BleakScanner.find_device_by_filter(
@@ -52,8 +61,8 @@ async def main():
         ecg_settings = MeasurementSettings(
             measurement_type="ECG",
             settings=[
-                SettingType(type="SAMPLE_RATE", array_length=1, values=[130]),
-                SettingType(type="RESOLUTION", array_length=1, values=[14]),
+                SettingType(type="SAMPLE_RATE", values=[130]),
+                SettingType(type="RESOLUTION", values=[14]),
             ],
         )
 
@@ -61,9 +70,9 @@ async def main():
         acc_settings = MeasurementSettings(
             measurement_type="ACC",
             settings=[
-                SettingType(type="SAMPLE_RATE", array_length=1, values=[25]),
-                SettingType(type="RESOLUTION", array_length=1, values=[16]),
-                SettingType(type="RANGE", array_length=1, values=[2]),
+                SettingType(type="SAMPLE_RATE", values=[25]),
+                SettingType(type="RESOLUTION", values=[16]),
+                SettingType(type="RANGE", values=[2]),
             ],
         )
 
@@ -91,6 +100,7 @@ async def main():
         # Keep the stream running indefinitely until exit_event is set
         while not exit_event.is_set():
             await asyncio.sleep(1)
+
 
 if __name__ == "__main__":
     # Set up signal handlers

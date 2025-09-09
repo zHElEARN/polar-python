@@ -62,17 +62,17 @@ async def main():
         ecg_settings = MeasurementSettings(
             measurement_type="ECG",
             settings=[
-                SettingType(type="SAMPLE_RATE", array_length=1, values=[130]),
-                SettingType(type="RESOLUTION", array_length=1, values=[14]),
+                SettingType(type="SAMPLE_RATE", values=[130]),
+                SettingType(type="RESOLUTION", values=[14]),
             ],
         )
 
         acc_settings = MeasurementSettings(
             measurement_type="ACC",
             settings=[
-                SettingType(type="SAMPLE_RATE", array_length=1, values=[25]),
-                SettingType(type="RESOLUTION", array_length=1, values=[16]),
-                SettingType(type="RANGE", array_length=1, values=[2]),
+                SettingType(type="SAMPLE_RATE", values=[25]),
+                SettingType(type="RESOLUTION", values=[16]),
+                SettingType(type="RANGE", values=[2]),
             ],
         )
 

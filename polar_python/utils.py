@@ -42,9 +42,7 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
                 for i in range(array_length)
             ]
             settings.append(
-                constants.SettingType(
-                    type=setting_type, array_length=array_length, values=setting_values
-                )
+                constants.SettingType(type=setting_type, values=setting_values)
             )
             index += 2 + 2 * array_length
 
