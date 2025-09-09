@@ -55,6 +55,8 @@ async def main():
             ],
         )
 
+        ppi_settings = MeasurementSettings(measurement_type="PPI", settings=[])
+
         def heartrate_callback(data: HRData):
             console.print(f"[bold green]Received Data:[/bold green] {data}")
 
@@ -62,7 +64,8 @@ async def main():
             console.print(f"[bold green]Received Data:[/bold green] {data}")
 
         polar_device.set_callback(data_callback, heartrate_callback)
-        await polar_device.start_stream(acc_settings)
+        # await polar_device.start_stream(acc_settings)
+        await polar_device.start_stream(ppi_settings)
         await polar_device.start_heartrate_stream()
 
         while not exit_event.is_set():
