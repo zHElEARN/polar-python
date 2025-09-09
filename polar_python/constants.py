@@ -31,7 +31,26 @@ PMD_CONTROL_POINT_ERROR_CODES: List[str] = [
 PMD_CONTROL_OPERATION_CODE: dict = {"GET": 0x01, "START": 0x02, "STOP": 0x03}
 
 # PMD Setting Types
-PMD_SETTING_TYPES: List[str] = ["SAMPLE_RATE", "RESOLUTION", "RANGE", "RFU", "CHANNELS"]
+PMD_SETTING_TYPES: List[str] = [
+    "SAMPLE_RATE",
+    "RESOLUTION",
+    "RANGE",
+    "RANGE_MILLIUNIT",
+    "CHANNELS",
+    "FACTOR",
+    "SECURITY",
+]
+
+# PMD Setting Types to Field Sizes
+PMD_SETTING_TYPES_TO_FIELD_SIZES = {
+    "SAMPLE_RATE": 2,
+    "RESOLUTION": 2,
+    "RANGE": 2,
+    "RANGE_MILLIUNIT": 4,
+    "CHANNELS": 1,
+    "FACTOR": 4,
+    "SECURITY": 16,
+}
 
 # Timestamp Offset
 TIMESTAMP_OFFSET: int = 946684800000000000
