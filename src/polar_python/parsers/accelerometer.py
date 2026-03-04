@@ -1,18 +1,21 @@
 """Accelerometer (ACC) data parsing functions."""
 
-from typing import List
-from .compression import parse_delta_frames_all
+from typing import Sequence
+
 from .. import constants
+from .compression import parse_delta_frames_all
 
 
 def parse_acc_data(
-    data: List[int], timestamp: int, frame_type: int, factor: float = 1.0
+    data: bytearray, timestamp: int, frame_type: int, factor: float = 1.0
 ) -> constants.ACCData:
     """Parse accelerometer data from a list of integers based on frame type."""
     is_compressed = (frame_type & 0x80) != 0
     actual_frame_type = frame_type & 0x7F
 
-    # print(f"Frame type: {frame_type}, Is compressed: {is_compressed}, Actual frame type: {actual_frame_type}")
+    # print(
+    #     f"Frame type: {frame_type}, Is compressed: {is_compressed}, Actual frame type: {actual_frame_type}"
+    # )
 
     if is_compressed:
         return parse_compressed_acc_data(data, timestamp, actual_frame_type, factor)
@@ -20,7 +23,9 @@ def parse_acc_data(
         return parse_raw_acc_data(data, timestamp, actual_frame_type)
 
 
-def parse_raw_acc_data(data: List[int], timestamp: int, frame_type: int) -> constants.ACCData:
+def parse_raw_acc_data(
+    data: bytearray, timestamp: int, frame_type: int
+) -> constants.ACCData:
     """Parse raw (non-compressed) accelerometer data.
 
     For raw data, the device sends values in the correct units (milliG),
@@ -72,7 +77,7 @@ def parse_raw_acc_data(data: List[int], timestamp: int, frame_type: int) -> cons
 
 
 def parse_compressed_acc_data(
-    data: List[int], timestamp: int, frame_type: int, factor: float
+    data: Sequence[int], timestamp: int, frame_type: int, factor: float
 ) -> constants.ACCData:
     """Parse compressed accelerometer data."""
     if frame_type == 0x00:  # Compressed TYPE_0

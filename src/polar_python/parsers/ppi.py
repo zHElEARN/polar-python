@@ -1,10 +1,11 @@
 """PPI (Peak-to-Peak Interval) data parsing functions."""
 
-from typing import List
+from typing import Sequence
+
 from .. import constants
 
 
-def parse_ppi_data(data: List[int], timestamp: int) -> constants.PPIData:
+def parse_ppi_data(data: Sequence[int], timestamp: int) -> constants.PPIData:
     """Parse PPI data from a list of integers."""
     ppi_samples = []
     offset = 10
@@ -44,9 +45,9 @@ def parse_ppi_data(data: List[int], timestamp: int) -> constants.PPIData:
                     ppi=sample["ppi"],
                     error_estimate=sample["error_estimate"],
                     hr=sample["hr"],
-                    invalid_ppi=sample["invalid_ppi"],
-                    skin_contact_status=sample["skin_contact_status"],
-                    skin_contact_supported=sample["skin_contact_supported"],
+                    invalid_ppi=bool(sample["invalid_ppi"]),
+                    skin_contact_status=bool(sample["skin_contact_status"]),
+                    skin_contact_supported=bool(sample["skin_contact_supported"]),
                     timestamp=current_timestamp,
                 )
             )
@@ -60,9 +61,9 @@ def parse_ppi_data(data: List[int], timestamp: int) -> constants.PPIData:
                     ppi=sample["ppi"],
                     error_estimate=sample["error_estimate"],
                     hr=sample["hr"],
-                    invalid_ppi=sample["invalid_ppi"],
-                    skin_contact_status=sample["skin_contact_status"],
-                    skin_contact_supported=sample["skin_contact_supported"],
+                    invalid_ppi=bool(sample["invalid_ppi"]),
+                    skin_contact_status=bool(sample["skin_contact_status"]),
+                    skin_contact_supported=bool(sample["skin_contact_supported"]),
                     timestamp=0,
                 )
             )

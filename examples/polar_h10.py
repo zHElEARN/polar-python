@@ -2,18 +2,20 @@ import asyncio
 import signal
 import threading
 from typing import Union
+
 from bleak import BleakScanner
-from rich.console import Console
 from rich import inspect
+from rich.console import Console
 
 from polar_python import (
-    PolarDevice,
-    MeasurementSettings,
-    SettingType,
-    ECGData,
     ACCData,
+    ECGData,
     HRData,
+    MeasurementSettings,
+    PolarDevice,
+    SettingType,
 )
+from polar_python.constants import PPIData
 
 # Initialize Rich Console
 console = Console()
@@ -84,7 +86,7 @@ async def main():
         def heartrate_callback(data: HRData):
             console.print(f"[bold green]Received Data:[/bold green] {data}")
 
-        def data_callback(data: Union[ECGData, ACCData]):
+        def data_callback(data: Union[ECGData, ACCData, PPIData]):
             """
             Callback function to handle incoming data from the Polar device.
 

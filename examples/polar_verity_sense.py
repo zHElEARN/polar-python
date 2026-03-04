@@ -2,17 +2,18 @@ import asyncio
 import signal
 import threading
 from typing import Union
+
 from bleak import BleakScanner
-from rich.console import Console
 from rich import inspect
+from rich.console import Console
 
 from polar_python import (
-    PolarDevice,
-    MeasurementSettings,
-    SettingType,
-    ECGData,
     ACCData,
+    ECGData,
     HRData,
+    MeasurementSettings,
+    PolarDevice,
+    SettingType,
 )
 from polar_python.constants import PPIData
 
@@ -58,14 +59,14 @@ async def main():
 
         ppi_settings = MeasurementSettings(measurement_type="PPI", settings=[])
 
-        ppg_settings = MeasurementSettings(
-            measurement_type="PPG",
-            settings=[
-                SettingType(type="SAMPLE_RATE", values=[55]),
-                SettingType(type="RESOLUTION", values=[22]),
-                SettingType(type="CHANNELS", values=[4]),
-            ],
-        )
+        # ppg_settings = MeasurementSettings(
+        #     measurement_type="PPG",
+        #     settings=[
+        #         SettingType(type="SAMPLE_RATE", values=[55]),
+        #         SettingType(type="RESOLUTION", values=[22]),
+        #         SettingType(type="CHANNELS", values=[4]),
+        #     ],
+        # )
 
         def heartrate_callback(data: HRData):
             console.print(f"[bold green]Received Data:[/bold green] {data}")

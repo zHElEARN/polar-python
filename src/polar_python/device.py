@@ -1,8 +1,9 @@
 import asyncio
+from typing import Callable, List, Union
+
 from bleak import BleakClient
-from bleak.backends.device import BLEDevice
 from bleak.backends.characteristic import BleakGATTCharacteristic
-from typing import Union, Callable, List
+from bleak.backends.device import BLEDevice
 
 from . import constants, exceptions, utils
 
@@ -11,10 +12,13 @@ class PolarDevice:
     def __init__(
         self,
         address_or_ble_device: Union[str, BLEDevice],
-        data_callback: Callable[
-            [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
-        ] = None,
-        heartrate_callback: Callable[[constants.HRData], None] = None,
+        data_callback: (
+            Callable[
+                [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
+            ]
+            | None
+        ) = None,
+        heartrate_callback: Callable[[constants.HRData], None] | None = None,
     ) -> None:
         """
         Initialize the PolarDevice with a BLE address or device.
@@ -150,30 +154,33 @@ class PolarDevice:
 
     def set_callback(
         self,
-        data_callback: Callable[
-            [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
-        ] = None,
-        heartrate_callback: Callable[[constants.HRData], None] = None,
+        data_callback: (
+            Callable[
+                [Union[constants.ECGData, constants.ACCData, constants.PPIData]], None
+            ]
+            | None
+        ) = None,
+        heartrate_callback: Callable[[constants.HRData], None] | None = None,
     ) -> None:
         self._data_callback = data_callback
         self._heartrate_callback = heartrate_callback
 
     def _handle_pmd_control(
-        self, sender: BleakGATTCharacteristic, data: bytearray
+        self, sender: Union[BleakGATTCharacteristic, int], data: bytearray
     ) -> None:
         """Handle PMD control notifications."""
         self._queue_pmd_control.put_nowait(data)
 
     def _handle_pmd_data(
-        self, sender: BleakGATTCharacteristic, data: bytearray
+        self, sender: Union[BleakGATTCharacteristic, int], data: bytearray
     ) -> None:
         """Handle PMD data notifications."""
         parsed_data = utils.parse_bluetooth_data(data)
-        if self._data_callback:
+        if self._data_callback and parsed_data:
             self._data_callback(parsed_data)
 
     def _handle_heartrate_measurement(
-        self, sender: BleakGATTCharacteristic, data: bytearray
+        self, sender: Union[BleakGATTCharacteristic, int], data: bytearray
     ) -> None:
         """Handle heart rate measurement notifications."""
         parsed_data = utils.parse_heartrate_data(data)

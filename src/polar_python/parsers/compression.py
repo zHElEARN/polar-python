@@ -1,11 +1,11 @@
 """Data compression and decompression utilities."""
 
 import math
-from typing import List
+from typing import List, Sequence
 
 
 def parse_delta_frames_all(
-    data: List[int], channels: int, resolution: int, data_type: str
+    data: Sequence[int], channels: int, resolution: int, data_type: str
 ) -> List[List[int]]:
     """Parse delta frames similar to Java's parseDeltaFramesAll method."""
     if len(data) == 0:
@@ -52,7 +52,7 @@ def parse_delta_frames_all(
 
 
 def parse_delta_frame_ref_samples(
-    data: List[int], channels: int, resolution: int, data_type: str
+    data: Sequence[int], channels: int, resolution: int, data_type: str
 ) -> List[int]:
     """Parse reference samples from delta frame data."""
     samples = []
@@ -83,7 +83,7 @@ def parse_delta_frame_ref_samples(
 
 
 def parse_delta_frame(
-    data: List[int], channels: int, bit_width: int
+    data: Sequence[int], channels: int, bit_width: int
 ) -> List[List[int]]:
     """Parse delta frame data into samples."""
     if len(data) == 0 or bit_width <= 0 or channels <= 0:

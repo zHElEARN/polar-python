@@ -1,15 +1,16 @@
 """Bluetooth data parsing functions."""
 
-from typing import List, Union
+from typing import Union
+
 from .. import constants
-from .ecg import parse_ecg_data
 from .accelerometer import parse_acc_data
+from .ecg import parse_ecg_data
 from .ppi import parse_ppi_data
 
 
 def parse_bluetooth_data(
-    data: List[int],
-) -> Union[constants.ECGData, constants.ACCData, constants.PPIData]:
+    data: bytearray,
+) -> Union[constants.ECGData, constants.ACCData, constants.PPIData] | None:
     """Parse Bluetooth data and return the appropriate data type."""
     try:
         data_type_index = data[0]

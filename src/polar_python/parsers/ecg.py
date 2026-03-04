@@ -1,10 +1,11 @@
 """ECG (Electrocardiogram) data parsing functions."""
 
-from typing import List
+from typing import Sequence
+
 from .. import constants
 
 
-def parse_ecg_data(data: List[int], timestamp: int) -> constants.ECGData:
+def parse_ecg_data(data: Sequence[int], timestamp: int) -> constants.ECGData:
     """Parse ECG data from a list of integers."""
     ecg_data = [
         int.from_bytes(data[i : i + 3], byteorder="little", signed=True)

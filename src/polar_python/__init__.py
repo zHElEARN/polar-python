@@ -1,5 +1,5 @@
+from .constants import ACCData, ECGData, HRData, MeasurementSettings, SettingType
 from .device import PolarDevice
-from .constants import MeasurementSettings, SettingType, ECGData, ACCData, HRData
 
 __all__ = [
     "PolarDevice",
