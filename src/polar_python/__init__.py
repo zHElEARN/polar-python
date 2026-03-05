@@ -1,5 +1,5 @@
 from .device import PolarDevice
-from .models import ACCData, ECGData, HRData, MeasurementSettings
+from .models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
 
 __all__ = [
     "PolarDevice",
@@ -7,4 +7,5 @@ __all__ = [
     "ECGData",
     "ACCData",
     "HRData",
+    "PPIData",
 ]

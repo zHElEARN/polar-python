@@ -1,7 +1,6 @@
 import asyncio
 import signal
 import threading
-from typing import Union
 
 import numpy
 from bleak import BleakScanner
@@ -14,9 +13,8 @@ from polar_python import (
     HRData,
     MeasurementSettings,
     PolarDevice,
-    SettingType,
+    PPIData,
 )
-from polar_python.constants import PPIData
 
 console = Console()
 
@@ -37,7 +35,7 @@ def heartrate_callback(data: HRData):
     console.print(f"[bold green]Received Data:[/bold green] {data}")
 
 
-def data_callback(data: Union[ECGData, ACCData, PPIData]):
+def data_callback(data: ECGData | ACCData | PPIData):
     console.print(f"[bold green]Received Data:[/bold green] {data}")
     if isinstance(data, ECGData):
         ecg_data_list.extend(data.data)
@@ -64,17 +62,17 @@ async def main():
         ecg_settings = MeasurementSettings(
             measurement_type="ECG",
             settings=[
-                SettingType(type="SAMPLE_RATE", values=[130]),
-                SettingType(type="RESOLUTION", values=[14]),
+                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[130]),
+                MeasurementSettings.SettingType(type="RESOLUTION", values=[14]),
             ],
         )
 
         acc_settings = MeasurementSettings(
             measurement_type="ACC",
             settings=[
-                SettingType(type="SAMPLE_RATE", values=[25]),
-                SettingType(type="RESOLUTION", values=[16]),
-                SettingType(type="RANGE", values=[2]),
+                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[25]),
+                MeasurementSettings.SettingType(type="RESOLUTION", values=[16]),
+                MeasurementSettings.SettingType(type="RANGE", values=[2]),
             ],
         )
 
