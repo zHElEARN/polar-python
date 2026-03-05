@@ -41,10 +41,10 @@ class PolarDevice:
         try:
             await self.client.connect()
             await self.client.start_notify(
-                PolarCharacteristic.PMD_CONTROL_POINT, self._handle_pmd_control
+                PolarCharacteristic.PMD_CONTROL_POINT.value, self._handle_pmd_control
             )
             await self.client.start_notify(
-                PolarCharacteristic.PMD_DATA, self._handle_pmd_data
+                PolarCharacteristic.PMD_DATA.value, self._handle_pmd_data
             )
         except Exception as e:
             raise exceptions.ConnectionError(
@@ -73,7 +73,7 @@ class PolarDevice:
         """Retrieve available features from the Polar device."""
         try:
             data = await self.client.read_gatt_char(
-                PolarCharacteristic.PMD_CONTROL_POINT
+                PolarCharacteristic.PMD_CONTROL_POINT.value
             )
             if data[0] != 0x0F:
                 raise exceptions.ControlPointResponseError(
@@ -95,7 +95,7 @@ class PolarDevice:
         """Request stream settings for a specific measurement type."""
         try:
             await self.client.write_gatt_char(
-                PolarCharacteristic.PMD_CONTROL_POINT,
+                PolarCharacteristic.PMD_CONTROL_POINT.value,
                 bytearray(
                     [
                         PmdControlOperationCode.GET,
@@ -114,7 +114,7 @@ class PolarDevice:
         try:
             data = parsers.build_measurement_settings(settings)
             await self.client.write_gatt_char(
-                PolarCharacteristic.PMD_CONTROL_POINT, data
+                PolarCharacteristic.PMD_CONTROL_POINT.value, data
             )
         except Exception as e:
             raise exceptions.WriteCharacteristicError(
@@ -125,7 +125,7 @@ class PolarDevice:
         """Stop data stream for a specific measurement type."""
         try:
             await self.client.write_gatt_char(
-                PolarCharacteristic.PMD_CONTROL_POINT,
+                PolarCharacteristic.PMD_CONTROL_POINT.value,
                 bytearray(
                     [
                         PmdControlOperationCode.STOP,
@@ -142,7 +142,7 @@ class PolarDevice:
         """Start heart rate data stream."""
         try:
             await self.client.start_notify(
-                PolarCharacteristic.HEART_RATE, self._handle_heartrate_measurement
+                PolarCharacteristic.HEART_RATE.value, self._handle_heartrate_measurement
             )
         except Exception as e:
             raise exceptions.NotificationError(
@@ -152,7 +152,7 @@ class PolarDevice:
     async def stop_heartrate_stream(self) -> None:
         """Stop heart rate data stream."""
         try:
-            await self.client.stop_notify(PolarCharacteristic.HEART_RATE)
+            await self.client.stop_notify(PolarCharacteristic.HEART_RATE.value)
         except Exception as e:
             raise exceptions.NotificationError(
                 f"Failed to stop heart rate stream: {str(e)}"
