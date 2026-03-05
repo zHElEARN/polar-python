@@ -2,9 +2,9 @@
 
 from ..constants import (
     PMD_CONTROL_OPERATION_CODE,
-    PMD_CONTROL_POINT_ERROR_CODES,
     PMD_SETTING_TYPES,
     PMD_SETTING_TYPES_TO_FIELD_SIZES,
+    PmdControlPointErrorCode,
     PmdMeasurementType,
 )
 from ..models import MeasurementSettings
@@ -18,11 +18,7 @@ def parse_pmd_data(data: bytearray) -> MeasurementSettings:
         more_frames = data[4] != 0
 
         measurement_type = PmdMeasurementType(measurement_type_index).name
-        error_code = (
-            PMD_CONTROL_POINT_ERROR_CODES[error_code_index]
-            if error_code_index < len(PMD_CONTROL_POINT_ERROR_CODES)
-            else "UNKNOWN"
-        )
+        error_code = PmdControlPointErrorCode(error_code_index)
 
         settings = []
         index = 5

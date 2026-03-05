@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..constants import PmdMeasurementType
+from ..constants import PmdControlPointErrorCode, PmdMeasurementType
 
 
 @dataclass
@@ -21,5 +21,5 @@ class MeasurementSettings:
 
     measurement_type: PmdMeasurementType
     settings: list[SettingType]
-    error_code: str | None = None
+    error_code: PmdControlPointErrorCode | None = None
     more_frames: bool | None = None
