@@ -1,6 +1,5 @@
 from .accelerometer import parse_acc_data, parse_compressed_acc_data, parse_raw_acc_data
 from .bluetooth import parse_bluetooth_data
-from .common import byte_to_bitmap
 from .compression import (
     parse_delta_frame,
     parse_delta_frame_ref_samples,
@@ -11,10 +10,7 @@ from .heartrate import parse_heartrate_data
 from .pmd import build_measurement_settings, parse_pmd_data
 from .ppi import parse_ppi_data
 
-# Export all functions
 __all__ = [
-    # Common utilities
-    "byte_to_bitmap",
     # PMD parsing
     "parse_pmd_data",
     "build_measurement_settings",
