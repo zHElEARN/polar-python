@@ -1,11 +1,10 @@
 """PMD (Physical Measurement Data) parsing functions."""
 
 from ..constants import (
-    PMD_CONTROL_OPERATION_CODE,
-    PMD_SETTING_TYPES,
-    PMD_SETTING_TYPES_TO_FIELD_SIZES,
+    PmdControlOperationCode,
     PmdControlPointErrorCode,
     PmdMeasurementType,
+    PmdSettingType,
 )
 from ..models import MeasurementSettings
 
@@ -24,13 +23,9 @@ def parse_pmd_data(data: bytearray) -> MeasurementSettings:
         index = 5
         while index < len(data):
             setting_type_index = data[index]
-            setting_type = (
-                PMD_SETTING_TYPES[setting_type_index]
-                if setting_type_index < len(PMD_SETTING_TYPES)
-                else "UNKNOWN"
-            )
+            setting_type = PmdSettingType(setting_type_index)
             array_length = data[index + 1]
-            field_size = PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting_type, 2)
+            field_size = setting_type.field_size
             setting_values = []
             for i in range(array_length):
                 start_pos = index + 2 + i * field_size
@@ -64,17 +59,17 @@ def build_measurement_settings(
 ) -> bytearray:
     """Build a bytearray from measurement settings."""
     data = bytearray()
-    data.append(PMD_CONTROL_OPERATION_CODE["START"])
+    data.append(PmdControlOperationCode.START)
 
     measurement_type_index = measurement_settings.measurement_type.value
     data.append(measurement_type_index)
 
     for setting in measurement_settings.settings:
-        setting_type_index = PMD_SETTING_TYPES.index(setting.type)
+        setting_type_index = setting.type.value
         data.append(setting_type_index)
         data.append(setting.array_length)
         for value in setting.values:
-            field_size = PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting.type, 2)
+            field_size = setting.type.field_size
             data.extend(value.to_bytes(field_size, "little"))
 
     return data

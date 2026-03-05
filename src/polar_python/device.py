@@ -8,9 +8,9 @@ from bleak.backends.device import BLEDevice
 from . import exceptions, utils
 from .constants import (
     HEART_RATE_CHAR_UUID,
-    PMD_CONTROL_OPERATION_CODE,
     PMD_CONTROL_POINT_UUID,
     PMD_DATA_UUID,
+    PmdControlOperationCode,
     PmdMeasurementType,
 )
 from .models import HRData, MeasurementSettings, SensorData
@@ -96,7 +96,7 @@ class PolarDevice:
                 PMD_CONTROL_POINT_UUID,
                 bytearray(
                     [
-                        PMD_CONTROL_OPERATION_CODE["GET"],
+                        PmdControlOperationCode.GET,
                         measurement_type.value,
                     ]
                 ),
@@ -124,7 +124,7 @@ class PolarDevice:
                 PMD_CONTROL_POINT_UUID,
                 bytearray(
                     [
-                        PMD_CONTROL_OPERATION_CODE["STOP"],
+                        PmdControlOperationCode.STOP,
                         measurement_type.value,
                     ]
                 ),

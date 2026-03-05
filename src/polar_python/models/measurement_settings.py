@@ -1,6 +1,6 @@
 from dataclasses import dataclass
 
-from ..constants import PmdControlPointErrorCode, PmdMeasurementType
+from ..constants import PmdControlPointErrorCode, PmdMeasurementType, PmdSettingType
 
 
 @dataclass
@@ -11,7 +11,7 @@ class MeasurementSettings:
     class SettingType:
         """Represents a setting type with its array length and possible values."""
 
-        type: str
+        type: PmdSettingType
         values: list[int]
 
         @property

@@ -33,30 +33,40 @@ class PmdControlPointErrorCode(IntEnum):
     ERROR_DEVICE_IN_CHARGER = 13
 
 
-# PMD Control Operation Codes
-PMD_CONTROL_OPERATION_CODE: dict[str, int] = {"GET": 0x01, "START": 0x02, "STOP": 0x03}
+class PmdControlOperationCode(IntEnum):
+    GET = 0x01
+    START = 0x02
+    STOP = 0x03
 
-# PMD Setting Types
-PMD_SETTING_TYPES: list[str] = [
-    "SAMPLE_RATE",
-    "RESOLUTION",
-    "RANGE",
-    "RANGE_MILLIUNIT",
-    "CHANNELS",
-    "FACTOR",
-    "SECURITY",
-]
 
-# PMD Setting Types to Field Sizes
-PMD_SETTING_TYPES_TO_FIELD_SIZES: dict[str, int] = {
-    "SAMPLE_RATE": 2,
-    "RESOLUTION": 2,
-    "RANGE": 2,
-    "RANGE_MILLIUNIT": 4,
-    "CHANNELS": 1,
-    "FACTOR": 4,
-    "SECURITY": 16,
-}
+class PmdSettingType(IntEnum):
+    SAMPLE_RATE = 0
+    RESOLUTION = 1
+    RANGE = 2
+    RANGE_MILLIUNIT = 3
+    CHANNELS = 4
+    FACTOR = 5
+    SECURITY = 6
+
+    @property
+    def field_size(self) -> int:
+        """Get the field size in bytes for the setting type."""
+        match self:
+            case PmdSettingType.RANGE_MILLIUNIT | PmdSettingType.FACTOR:
+                return 4
+            case PmdSettingType.CHANNELS:
+                return 1
+            case PmdSettingType.SECURITY:
+                return 16
+            case (
+                PmdSettingType.SAMPLE_RATE
+                | PmdSettingType.RESOLUTION
+                | PmdSettingType.RANGE
+            ):
+                return 2
+            case _:
+                return 2
+
 
 # Timestamp Offset
 TIMESTAMP_OFFSET: int = 946684800000000000
