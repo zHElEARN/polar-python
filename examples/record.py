@@ -7,14 +7,9 @@ from bleak import BleakScanner
 from rich import inspect
 from rich.console import Console
 
-from polar_python import (
-    ACCData,
-    ECGData,
-    HRData,
-    MeasurementSettings,
-    PolarDevice,
-    PPIData,
-)
+from polar_python import PolarDevice
+from polar_python.constants import PmdMeasurementType, PmdSettingType
+from polar_python.models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
 
 console = Console()
 
@@ -60,19 +55,27 @@ async def main():
             console.print(f"[bold blue]Settings for {feature}:[/bold blue] {settings}")
 
         ecg_settings = MeasurementSettings(
-            measurement_type="ECG",
+            measurement_type=PmdMeasurementType.ECG,
             settings=[
-                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[130]),
-                MeasurementSettings.SettingType(type="RESOLUTION", values=[14]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.SAMPLE_RATE, values=[130]
+                ),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.RESOLUTION, values=[14]
+                ),
             ],
         )
 
         acc_settings = MeasurementSettings(
-            measurement_type="ACC",
+            measurement_type=PmdMeasurementType.ACC,
             settings=[
-                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[25]),
-                MeasurementSettings.SettingType(type="RESOLUTION", values=[16]),
-                MeasurementSettings.SettingType(type="RANGE", values=[2]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.SAMPLE_RATE, values=[25]
+                ),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.RESOLUTION, values=[16]
+                ),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[2]),
             ],
         )
 

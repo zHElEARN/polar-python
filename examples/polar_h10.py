@@ -6,14 +6,9 @@ from bleak import BleakScanner
 from rich import inspect
 from rich.console import Console
 
-from polar_python import (
-    ACCData,
-    ECGData,
-    HRData,
-    MeasurementSettings,
-    PolarDevice,
-    PPIData,
-)
+from polar_python import PolarDevice
+from polar_python.constants import PmdMeasurementType, PmdSettingType
+from polar_python.models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
 
 # Initialize Rich Console
 console = Console()
@@ -59,25 +54,33 @@ async def main():
 
         # Define ECG measurement settings
         ecg_settings = MeasurementSettings(
-            measurement_type="ECG",
+            measurement_type=PmdMeasurementType.ECG,
             settings=[
                 # SAMPLE_RATE options: 130 Hz
-                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[130]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.SAMPLE_RATE, values=[130]
+                ),
                 # RESOLUTION options: 14
-                MeasurementSettings.SettingType(type="RESOLUTION", values=[14]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.RESOLUTION, values=[14]
+                ),
             ],
         )
 
         # Define ACC measurement settings
         acc_settings = MeasurementSettings(
-            measurement_type="ACC",
+            measurement_type=PmdMeasurementType.ACC,
             settings=[
                 # SAMPLE_RATE options: 25, 50, 100, 200 Hz
-                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[25]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.SAMPLE_RATE, values=[25]
+                ),
                 # RESOLUTION options: 16
-                MeasurementSettings.SettingType(type="RESOLUTION", values=[16]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.RESOLUTION, values=[16]
+                ),
                 # RANGE options: 2, 4, 8 G
-                MeasurementSettings.SettingType(type="RANGE", values=[2]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[2]),
             ],
         )
 

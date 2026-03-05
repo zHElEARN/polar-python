@@ -1,9 +1,16 @@
-from enum import IntEnum
+from enum import Enum, IntEnum
+from typing import Final
 
-# UUIDs for Polar device characteristics
-HEART_RATE_CHAR_UUID: str = "00002a37-0000-1000-8000-00805f9b34fb"
-PMD_CONTROL_POINT_UUID: str = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
-PMD_DATA_UUID: str = "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8"
+# Epoch offset for Polar device timestamps (Jan 1, 2000)
+TIMESTAMP_OFFSET: Final[int] = 946684800000000000
+
+
+class PolarCharacteristic(str, Enum):
+    """UUIDs for Polar device characteristics."""
+
+    HEART_RATE = "00002a37-0000-1000-8000-00805f9b34fb"
+    PMD_CONTROL_POINT = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
+    PMD_DATA = "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8"
 
 
 class PmdMeasurementType(IntEnum):
@@ -66,7 +73,3 @@ class PmdSettingType(IntEnum):
                 return 2
             case _:
                 return 2
-
-
-# Timestamp Offset
-TIMESTAMP_OFFSET: int = 946684800000000000

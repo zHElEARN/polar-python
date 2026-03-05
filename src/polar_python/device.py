@@ -7,11 +7,9 @@ from bleak.backends.device import BLEDevice
 
 from . import exceptions, utils
 from .constants import (
-    HEART_RATE_CHAR_UUID,
-    PMD_CONTROL_POINT_UUID,
-    PMD_DATA_UUID,
     PmdControlOperationCode,
     PmdMeasurementType,
+    PolarCharacteristic,
 )
 from .models import HRData, MeasurementSettings, SensorData
 
@@ -43,9 +41,11 @@ class PolarDevice:
         try:
             await self.client.connect()
             await self.client.start_notify(
-                PMD_CONTROL_POINT_UUID, self._handle_pmd_control
+                PolarCharacteristic.PMD_CONTROL_POINT, self._handle_pmd_control
             )
-            await self.client.start_notify(PMD_DATA_UUID, self._handle_pmd_data)
+            await self.client.start_notify(
+                PolarCharacteristic.PMD_DATA, self._handle_pmd_data
+            )
         except Exception as e:
             raise exceptions.ConnectionError(
                 f"Failed to connect to the Polar device: {str(e)}"
@@ -72,7 +72,9 @@ class PolarDevice:
     async def available_features(self) -> list[PmdMeasurementType]:
         """Retrieve available features from the Polar device."""
         try:
-            data = await self.client.read_gatt_char(PMD_CONTROL_POINT_UUID)
+            data = await self.client.read_gatt_char(
+                PolarCharacteristic.PMD_CONTROL_POINT
+            )
             if data[0] != 0x0F:
                 raise exceptions.ControlPointResponseError(
                     "Unexpected response from the control point"
@@ -93,7 +95,7 @@ class PolarDevice:
         """Request stream settings for a specific measurement type."""
         try:
             await self.client.write_gatt_char(
-                PMD_CONTROL_POINT_UUID,
+                PolarCharacteristic.PMD_CONTROL_POINT,
                 bytearray(
                     [
                         PmdControlOperationCode.GET,
@@ -111,7 +113,9 @@ class PolarDevice:
         """Start data stream with specified settings."""
         try:
             data = utils.build_measurement_settings(settings)
-            await self.client.write_gatt_char(PMD_CONTROL_POINT_UUID, data)
+            await self.client.write_gatt_char(
+                PolarCharacteristic.PMD_CONTROL_POINT, data
+            )
         except Exception as e:
             raise exceptions.WriteCharacteristicError(
                 f"Failed to start stream with settings {settings}: {str(e)}"
@@ -121,7 +125,7 @@ class PolarDevice:
         """Stop data stream for a specific measurement type."""
         try:
             await self.client.write_gatt_char(
-                PMD_CONTROL_POINT_UUID,
+                PolarCharacteristic.PMD_CONTROL_POINT,
                 bytearray(
                     [
                         PmdControlOperationCode.STOP,
@@ -138,7 +142,7 @@ class PolarDevice:
         """Start heart rate data stream."""
         try:
             await self.client.start_notify(
-                HEART_RATE_CHAR_UUID, self._handle_heartrate_measurement
+                PolarCharacteristic.HEART_RATE, self._handle_heartrate_measurement
             )
         except Exception as e:
             raise exceptions.NotificationError(
@@ -148,7 +152,7 @@ class PolarDevice:
     async def stop_heartrate_stream(self) -> None:
         """Stop heart rate data stream."""
         try:
-            await self.client.stop_notify(HEART_RATE_CHAR_UUID)
+            await self.client.stop_notify(PolarCharacteristic.HEART_RATE)
         except Exception as e:
             raise exceptions.NotificationError(
                 f"Failed to stop heart rate stream: {str(e)}"

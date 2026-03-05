@@ -6,14 +6,9 @@ from bleak import BleakScanner
 from rich import inspect
 from rich.console import Console
 
-from polar_python import (
-    ACCData,
-    ECGData,
-    HRData,
-    MeasurementSettings,
-    PolarDevice,
-    PPIData,
-)
+from polar_python import PolarDevice
+from polar_python.constants import PmdMeasurementType, PmdSettingType
+from polar_python.models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
 
 console = Console()
 
@@ -46,16 +41,24 @@ async def main():
             )
 
         acc_settings = MeasurementSettings(
-            measurement_type="ACC",
+            measurement_type=PmdMeasurementType.ACC,
             settings=[
-                MeasurementSettings.SettingType(type="SAMPLE_RATE", values=[52]),
-                MeasurementSettings.SettingType(type="RESOLUTION", values=[16]),
-                MeasurementSettings.SettingType(type="RANGE", values=[8]),
-                MeasurementSettings.SettingType(type="CHANNELS", values=[3]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.SAMPLE_RATE, values=[52]
+                ),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.RESOLUTION, values=[16]
+                ),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[8]),
+                MeasurementSettings.SettingType(
+                    type=PmdSettingType.CHANNELS, values=[3]
+                ),
             ],
         )
 
-        ppi_settings = MeasurementSettings(measurement_type="PPI", settings=[])
+        ppi_settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.PPI, settings=[]
+        )
 
         # ppg_settings = MeasurementSettings(
         #     measurement_type="PPG",
