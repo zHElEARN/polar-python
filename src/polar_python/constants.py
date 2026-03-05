@@ -1,16 +1,13 @@
-from dataclasses import dataclass
-from typing import List, Optional, Tuple
-
 # UUIDs for Polar device characteristics
 HEART_RATE_CHAR_UUID: str = "00002a37-0000-1000-8000-00805f9b34fb"
 PMD_CONTROL_POINT_UUID: str = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
 PMD_DATA_UUID: str = "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8"
 
 # PMD Measurement Types
-PMD_MEASUREMENT_TYPES: List[str] = ["ECG", "PPG", "ACC", "PPI", "RFU", "GYRO", "MAG"]
+PMD_MEASUREMENT_TYPES: list[str] = ["ECG", "PPG", "ACC", "PPI", "RFU", "GYRO", "MAG"]
 
 # PMD Control Point Error Codes
-PMD_CONTROL_POINT_ERROR_CODES: List[str] = [
+PMD_CONTROL_POINT_ERROR_CODES: list[str] = [
     "SUCCESS",
     "ERROR INVALID OP CODE",
     "ERROR INVALID MEASUREMENT TYPE",
@@ -28,10 +25,10 @@ PMD_CONTROL_POINT_ERROR_CODES: List[str] = [
 ]
 
 # PMD Control Operation Codes
-PMD_CONTROL_OPERATION_CODE: dict = {"GET": 0x01, "START": 0x02, "STOP": 0x03}
+PMD_CONTROL_OPERATION_CODE: dict[str, int] = {"GET": 0x01, "START": 0x02, "STOP": 0x03}
 
 # PMD Setting Types
-PMD_SETTING_TYPES: List[str] = [
+PMD_SETTING_TYPES: list[str] = [
     "SAMPLE_RATE",
     "RESOLUTION",
     "RANGE",
@@ -42,7 +39,7 @@ PMD_SETTING_TYPES: List[str] = [
 ]
 
 # PMD Setting Types to Field Sizes
-PMD_SETTING_TYPES_TO_FIELD_SIZES = {
+PMD_SETTING_TYPES_TO_FIELD_SIZES: dict[str, int] = {
     "SAMPLE_RATE": 2,
     "RESOLUTION": 2,
     "RANGE": 2,
@@ -54,70 +51,3 @@ PMD_SETTING_TYPES_TO_FIELD_SIZES = {
 
 # Timestamp Offset
 TIMESTAMP_OFFSET: int = 946684800000000000
-
-
-@dataclass
-class SettingType:
-    """Represents a setting type with its array length and possible values."""
-
-    type: str
-    values: List[int]
-
-    @property
-    def array_length(self) -> int:
-        """Calculate array length from the values list."""
-        return len(self.values)
-
-
-@dataclass
-class MeasurementSettings:
-    """Represents measurement settings for a specific type."""
-
-    measurement_type: str
-    settings: List[SettingType]
-    error_code: Optional[str] = None
-    more_frames: Optional[bool] = None
-
-
-@dataclass
-class ACCData:
-    """Represents accelerometer data."""
-
-    timestamp: int
-    data: List[Tuple[int, int, int]]
-
-
-@dataclass
-class ECGData:
-    """Represents ECG data."""
-
-    timestamp: int
-    data: List[int]
-
-
-@dataclass
-class HRData:
-    """Represents heart rate data."""
-
-    heartrate: int
-    rr_intervals: List[float]
-
-
-@dataclass
-class PPISample:
-    """Represents a single PPI sample."""
-
-    ppi: int
-    error_estimate: int
-    hr: int
-    invalid_ppi: bool
-    skin_contact_status: bool
-    skin_contact_supported: bool
-    timestamp: int
-
-
-@dataclass
-class PPIData:
-    """Represents PPI data."""
-
-    samples: List[PPISample]

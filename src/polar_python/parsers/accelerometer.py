@@ -2,13 +2,13 @@
 
 from typing import Sequence
 
-from .. import constants
+from ..models import ACCData
 from .compression import parse_delta_frames_all
 
 
 def parse_acc_data(
     data: bytearray, timestamp: int, frame_type: int, factor: float = 1.0
-) -> constants.ACCData:
+) -> ACCData:
     """Parse accelerometer data from a list of integers based on frame type."""
     is_compressed = (frame_type & 0x80) != 0
     actual_frame_type = frame_type & 0x7F
@@ -23,9 +23,7 @@ def parse_acc_data(
         return parse_raw_acc_data(data, timestamp, actual_frame_type)
 
 
-def parse_raw_acc_data(
-    data: bytearray, timestamp: int, frame_type: int
-) -> constants.ACCData:
+def parse_raw_acc_data(data: bytearray, timestamp: int, frame_type: int) -> ACCData:
     """Parse raw (non-compressed) accelerometer data.
 
     For raw data, the device sends values in the correct units (milliG),
@@ -73,12 +71,12 @@ def parse_raw_acc_data(
                 )
                 acc_data.append((x, y, z))
 
-    return constants.ACCData(timestamp=timestamp, data=acc_data)
+    return ACCData(timestamp=timestamp, data=acc_data)
 
 
 def parse_compressed_acc_data(
     data: Sequence[int], timestamp: int, frame_type: int, factor: float
-) -> constants.ACCData:
+) -> ACCData:
     """Parse compressed accelerometer data."""
     if frame_type == 0x00:  # Compressed TYPE_0
         # type 0 data arrives in G units, convert to milliG
@@ -105,4 +103,4 @@ def parse_compressed_acc_data(
     else:
         raise ValueError(f"Unsupported compressed frame type: {frame_type}")
 
-    return constants.ACCData(timestamp=timestamp, data=acc_data)
+    return ACCData(timestamp=timestamp, data=acc_data)

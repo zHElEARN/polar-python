@@ -2,13 +2,13 @@
 
 from typing import Sequence
 
-from .. import constants
+from ..models import ECGData
 
 
-def parse_ecg_data(data: Sequence[int], timestamp: int) -> constants.ECGData:
+def parse_ecg_data(data: Sequence[int], timestamp: int) -> ECGData:
     """Parse ECG data from a list of integers."""
     ecg_data = [
         int.from_bytes(data[i : i + 3], byteorder="little", signed=True)
         for i in range(10, len(data), 3)
     ]
-    return constants.ECGData(timestamp=timestamp, data=ecg_data)
+    return ECGData(timestamp=timestamp, data=ecg_data)

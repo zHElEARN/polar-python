@@ -2,10 +2,10 @@
 
 from typing import Sequence
 
-from .. import constants
+from ..models import PPIData
 
 
-def parse_ppi_data(data: Sequence[int], timestamp: int) -> constants.PPIData:
+def parse_ppi_data(data: Sequence[int], timestamp: int) -> PPIData:
     """Parse PPI data from a list of integers."""
     ppi_samples = []
     offset = 10
@@ -41,7 +41,7 @@ def parse_ppi_data(data: Sequence[int], timestamp: int) -> constants.PPIData:
 
         for sample in reversed(ppi_samples):
             samples.append(
-                constants.PPISample(
+                PPIData.PPISample(
                     ppi=sample["ppi"],
                     error_estimate=sample["error_estimate"],
                     hr=sample["hr"],
@@ -57,7 +57,7 @@ def parse_ppi_data(data: Sequence[int], timestamp: int) -> constants.PPIData:
     else:
         for sample in ppi_samples:
             samples.append(
-                constants.PPISample(
+                PPIData.PPISample(
                     ppi=sample["ppi"],
                     error_estimate=sample["error_estimate"],
                     hr=sample["hr"],
@@ -68,4 +68,4 @@ def parse_ppi_data(data: Sequence[int], timestamp: int) -> constants.PPIData:
                 )
             )
 
-    return constants.PPIData(samples=samples)
+    return PPIData(samples=samples)

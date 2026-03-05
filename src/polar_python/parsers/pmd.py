@@ -1,9 +1,16 @@
 """PMD (Physical Measurement Data) parsing functions."""
 
-from .. import constants
+from ..constants import (
+    PMD_CONTROL_OPERATION_CODE,
+    PMD_CONTROL_POINT_ERROR_CODES,
+    PMD_MEASUREMENT_TYPES,
+    PMD_SETTING_TYPES,
+    PMD_SETTING_TYPES_TO_FIELD_SIZES,
+)
+from ..models import MeasurementSettings
 
 
-def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
+def parse_pmd_data(data: bytearray) -> MeasurementSettings:
     """Parse PMD data from a bytearray."""
     try:
         measurement_type_index = data[2]
@@ -11,13 +18,13 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
         more_frames = data[4] != 0
 
         measurement_type = (
-            constants.PMD_MEASUREMENT_TYPES[measurement_type_index]
-            if measurement_type_index < len(constants.PMD_MEASUREMENT_TYPES)
+            PMD_MEASUREMENT_TYPES[measurement_type_index]
+            if measurement_type_index < len(PMD_MEASUREMENT_TYPES)
             else "UNKNOWN"
         )
         error_code = (
-            constants.PMD_CONTROL_POINT_ERROR_CODES[error_code_index]
-            if error_code_index < len(constants.PMD_CONTROL_POINT_ERROR_CODES)
+            PMD_CONTROL_POINT_ERROR_CODES[error_code_index]
+            if error_code_index < len(PMD_CONTROL_POINT_ERROR_CODES)
             else "UNKNOWN"
         )
 
@@ -26,12 +33,12 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
         while index < len(data):
             setting_type_index = data[index]
             setting_type = (
-                constants.PMD_SETTING_TYPES[setting_type_index]
-                if setting_type_index < len(constants.PMD_SETTING_TYPES)
+                PMD_SETTING_TYPES[setting_type_index]
+                if setting_type_index < len(PMD_SETTING_TYPES)
                 else "UNKNOWN"
             )
             array_length = data[index + 1]
-            field_size = constants.PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting_type, 2)
+            field_size = PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting_type, 2)
             setting_values = []
             for i in range(array_length):
                 start_pos = index + 2 + i * field_size
@@ -44,11 +51,13 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
                             int.from_bytes(data[start_pos:end_pos], "little")
                         )
             settings.append(
-                constants.SettingType(type=setting_type, values=setting_values)
+                MeasurementSettings.SettingType(
+                    type=setting_type, values=setting_values
+                )
             )
             index += 2 + field_size * array_length
 
-        return constants.MeasurementSettings(
+        return MeasurementSettings(
             measurement_type=measurement_type,
             error_code=error_code,
             more_frames=more_frames,
@@ -59,23 +68,23 @@ def parse_pmd_data(data: bytearray) -> constants.MeasurementSettings:
 
 
 def build_measurement_settings(
-    measurement_settings: constants.MeasurementSettings,
+    measurement_settings: MeasurementSettings,
 ) -> bytearray:
     """Build a bytearray from measurement settings."""
     data = bytearray()
-    data.append(constants.PMD_CONTROL_OPERATION_CODE["START"])
+    data.append(PMD_CONTROL_OPERATION_CODE["START"])
 
-    measurement_type_index = constants.PMD_MEASUREMENT_TYPES.index(
+    measurement_type_index = PMD_MEASUREMENT_TYPES.index(
         measurement_settings.measurement_type
     )
     data.append(measurement_type_index)
 
     for setting in measurement_settings.settings:
-        setting_type_index = constants.PMD_SETTING_TYPES.index(setting.type)
+        setting_type_index = PMD_SETTING_TYPES.index(setting.type)
         data.append(setting_type_index)
         data.append(setting.array_length)
         for value in setting.values:
-            field_size = constants.PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting.type, 2)
+            field_size = PMD_SETTING_TYPES_TO_FIELD_SIZES.get(setting.type, 2)
             data.extend(value.to_bytes(field_size, "little"))
 
     return data

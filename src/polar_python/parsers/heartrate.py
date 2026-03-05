@@ -1,9 +1,9 @@
 """Heart rate data parsing functions."""
 
-from .. import constants
+from ..models import HRData
 
 
-def parse_heartrate_data(data: bytearray) -> constants.HRData:
+def parse_heartrate_data(data: bytearray) -> HRData:
     """Parse heart rate data from a bytearray."""
     try:
         heartrate = int.from_bytes(data[1:2], byteorder="little", signed=False)
@@ -13,7 +13,7 @@ def parse_heartrate_data(data: bytearray) -> constants.HRData:
             * 1000.0
             for i in range(2, len(data), 2)
         ]
-        return constants.HRData(heartrate, rr_intervals)
+        return HRData(heartrate, rr_intervals)
     except IndexError as e:
         raise ValueError(
             "Failed to parse heart rate data: insufficient data length"

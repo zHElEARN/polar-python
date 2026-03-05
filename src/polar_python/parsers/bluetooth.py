@@ -2,7 +2,8 @@
 
 from typing import Union
 
-from .. import constants
+from ..constants import PMD_MEASUREMENT_TYPES, TIMESTAMP_OFFSET
+from ..models import ACCData, ECGData, PPIData
 from .accelerometer import parse_acc_data
 from .ecg import parse_ecg_data
 from .ppi import parse_ppi_data
@@ -10,14 +11,12 @@ from .ppi import parse_ppi_data
 
 def parse_bluetooth_data(
     data: bytearray,
-) -> Union[constants.ECGData, constants.ACCData, constants.PPIData] | None:
+) -> Union[ECGData, ACCData, PPIData] | None:
     """Parse Bluetooth data and return the appropriate data type."""
     try:
         data_type_index = data[0]
-        data_type = constants.PMD_MEASUREMENT_TYPES[data_type_index]
-        timestamp = (
-            int.from_bytes(data[1:9], byteorder="little") + constants.TIMESTAMP_OFFSET
-        )
+        data_type = PMD_MEASUREMENT_TYPES[data_type_index]
+        timestamp = int.from_bytes(data[1:9], byteorder="little") + TIMESTAMP_OFFSET
         frame_type = data[9]
 
         if data_type == "ECG":

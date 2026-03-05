@@ -1,10 +1,9 @@
-from .constants import ACCData, ECGData, HRData, MeasurementSettings, SettingType
 from .device import PolarDevice
+from .models import ACCData, ECGData, HRData, MeasurementSettings
 
 __all__ = [
     "PolarDevice",
     "MeasurementSettings",
-    "SettingType",
     "ECGData",
     "ACCData",
     "HRData",
