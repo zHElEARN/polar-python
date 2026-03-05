@@ -47,7 +47,7 @@ async def main():
     inspect(device)
 
     async with PolarDevice(device) as polar_device:
-        available_features = await polar_device.available_features()
+        available_features = await polar_device.get_available_features()
         inspect(available_features)
 
         for feature in available_features:

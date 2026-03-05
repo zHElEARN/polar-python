@@ -44,7 +44,7 @@ async def main():
     # Establish connection to the Polar device
     async with PolarDevice(device) as polar_device:
         # Query available features
-        available_features = await polar_device.available_features()
+        available_features = await polar_device.get_available_features()
         inspect(available_features)
 
         # Query and print stream settings for each feature

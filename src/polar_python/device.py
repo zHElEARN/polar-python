@@ -5,7 +5,7 @@ from bleak import BleakClient
 from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
-from . import exceptions, utils
+from . import exceptions, parsers, utils
 from .constants import (
     PmdControlOperationCode,
     PmdMeasurementType,
@@ -69,7 +69,7 @@ class PolarDevice:
         """Support for async context management."""
         await self.disconnect()
 
-    async def available_features(self) -> list[PmdMeasurementType]:
+    async def get_available_features(self) -> list[PmdMeasurementType]:
         """Retrieve available features from the Polar device."""
         try:
             data = await self.client.read_gatt_char(
@@ -103,7 +103,7 @@ class PolarDevice:
                     ]
                 ),
             )
-            return utils.parse_pmd_data(await self._queue_pmd_control.get())
+            return parsers.parse_pmd_data(await self._queue_pmd_control.get())
         except Exception as e:
             raise exceptions.StreamSettingsError(
                 f"Failed to request stream settings for {measurement_type}: {str(e)}"
@@ -112,7 +112,7 @@ class PolarDevice:
     async def start_stream(self, settings: MeasurementSettings) -> None:
         """Start data stream with specified settings."""
         try:
-            data = utils.build_measurement_settings(settings)
+            data = parsers.build_measurement_settings(settings)
             await self.client.write_gatt_char(
                 PolarCharacteristic.PMD_CONTROL_POINT, data
             )
@@ -176,7 +176,7 @@ class PolarDevice:
         self, sender: BleakGATTCharacteristic | int, data: bytearray
     ) -> None:
         """Handle PMD data notifications."""
-        parsed_data = utils.parse_bluetooth_data(data)
+        parsed_data = parsers.parse_bluetooth_data(data)
         if self._data_callback and parsed_data:
             self._data_callback(parsed_data)
 
@@ -184,6 +184,6 @@ class PolarDevice:
         self, sender: BleakGATTCharacteristic | int, data: bytearray
     ) -> None:
         """Handle heart rate measurement notifications."""
-        parsed_data = utils.parse_heartrate_data(data)
+        parsed_data = parsers.parse_heartrate_data(data)
         if self._hr_callback:
             self._hr_callback(parsed_data)

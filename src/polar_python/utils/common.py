@@ -1,9 +1,4 @@
-"""Common utility functions for parsing operations."""
-
-from typing import List
-
-
-def byte_to_bitmap(byte: int) -> List[bool]:
+def byte_to_bitmap(byte: int) -> list[bool]:
     """Convert a byte to a bitmap (list of booleans)."""
     binary_string = f"{byte:08b}"
     reversed_binary_string = binary_string[::-1]
