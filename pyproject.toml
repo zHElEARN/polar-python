@@ -2,10 +2,10 @@
 name = "polar-python"
 version = "0.1.0"
 description = "polar-python is a Python library for connecting to Polar devices via Bluetooth Low Energy (BLE) using Bleak. It allows querying device capabilities (e.g., ECG, ACC, PPG), exploring configurable options, and streaming parsed data through callback functions."
-authors = [{ name = "zHElEARN", email = "personal@zhelearn.com" }]
+authors = [{ name = "zHElEARN", email = "i@zhelearn.com" }]
 readme = "README.md"
 license = { text = "MIT" }
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 dependencies = ["bleak"]
 classifiers = [
     "Programming Language :: Python :: 3",
