@@ -1,5 +1,7 @@
 from dataclasses import dataclass
 
+from ..constants import PmdMeasurementType
+
 
 @dataclass
 class MeasurementSettings:
@@ -17,7 +19,7 @@ class MeasurementSettings:
             """Calculate array length from the values list."""
             return len(self.values)
 
-    measurement_type: str
+    measurement_type: PmdMeasurementType
     settings: list[SettingType]
     error_code: str | None = None
     more_frames: bool | None = None

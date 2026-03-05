@@ -1,34 +1,31 @@
 """Bluetooth data parsing functions."""
 
-from typing import Union
-
-from ..constants import PMD_MEASUREMENT_TYPES, TIMESTAMP_OFFSET
-from ..models import ACCData, ECGData, PPIData
+from ..constants import TIMESTAMP_OFFSET, PmdMeasurementType
+from ..models import SensorData
 from .accelerometer import parse_acc_data
 from .ecg import parse_ecg_data
 from .ppi import parse_ppi_data
 
 
-def parse_bluetooth_data(
-    data: bytearray,
-) -> Union[ECGData, ACCData, PPIData] | None:
+def parse_bluetooth_data(data: bytearray) -> SensorData | None:
     """Parse Bluetooth data and return the appropriate data type."""
     try:
         data_type_index = data[0]
-        data_type = PMD_MEASUREMENT_TYPES[data_type_index]
+        data_type = PmdMeasurementType(data_type_index)
         timestamp = int.from_bytes(data[1:9], byteorder="little") + TIMESTAMP_OFFSET
         frame_type = data[9]
 
-        if data_type == "ECG":
-            return parse_ecg_data(data, timestamp)
-        elif data_type == "ACC":
-            return parse_acc_data(data, timestamp, frame_type)
-        elif data_type == "PPI":
-            return parse_ppi_data(data, timestamp)
-        else:
-            print(f"Unsupported data type: {data_type}")
-            print(" ".join([f"{byte:02X}" for byte in data]))
-            return None
+        match data_type:
+            case PmdMeasurementType.ECG:
+                return parse_ecg_data(data, timestamp)
+            case PmdMeasurementType.ACC:
+                return parse_acc_data(data, timestamp, frame_type)
+            case PmdMeasurementType.PPI:
+                return parse_ppi_data(data, timestamp)
+            case _:
+                print(f"Unsupported data type: {data_type}")
+                print(" ".join([f"{byte:02X}" for byte in data]))
+                return None
             # raise ValueError(f"Unsupported data type: {data_type}")
     except IndexError as e:
         raise ValueError(

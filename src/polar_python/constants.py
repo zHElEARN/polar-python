@@ -1,10 +1,20 @@
 # UUIDs for Polar device characteristics
+from enum import IntEnum
+
 HEART_RATE_CHAR_UUID: str = "00002a37-0000-1000-8000-00805f9b34fb"
 PMD_CONTROL_POINT_UUID: str = "FB005C81-02E7-F387-1CAD-8ACD2D8DF0C8"
 PMD_DATA_UUID: str = "FB005C82-02E7-F387-1CAD-8ACD2D8DF0C8"
 
-# PMD Measurement Types
-PMD_MEASUREMENT_TYPES: list[str] = ["ECG", "PPG", "ACC", "PPI", "RFU", "GYRO", "MAG"]
+
+class PmdMeasurementType(IntEnum):
+    ECG = 0
+    PPG = 1
+    ACC = 2
+    PPI = 3
+    RFU = 4
+    GYRO = 5
+    MAG = 6
+
 
 # PMD Control Point Error Codes
 PMD_CONTROL_POINT_ERROR_CODES: list[str] = [

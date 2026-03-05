@@ -11,7 +11,7 @@ from .constants import (
     PMD_CONTROL_OPERATION_CODE,
     PMD_CONTROL_POINT_UUID,
     PMD_DATA_UUID,
-    PMD_MEASUREMENT_TYPES,
+    PmdMeasurementType,
 )
 from .models import HRData, MeasurementSettings, SensorData
 
@@ -69,7 +69,7 @@ class PolarDevice:
         """Support for async context management."""
         await self.disconnect()
 
-    async def available_features(self) -> list[str]:
+    async def available_features(self) -> list[PmdMeasurementType]:
         """Retrieve available features from the Polar device."""
         try:
             data = await self.client.read_gatt_char(PMD_CONTROL_POINT_UUID)
@@ -80,9 +80,7 @@ class PolarDevice:
             features = data[1]
             bitmap = utils.byte_to_bitmap(features)
             return [
-                PMD_MEASUREMENT_TYPES[int(index)]
-                for index, bit in enumerate(bitmap)
-                if bit
+                PmdMeasurementType(index) for index, bit in enumerate(bitmap) if bit
             ]
         except Exception as e:
             raise exceptions.ReadCharacteristicError(
@@ -90,7 +88,7 @@ class PolarDevice:
             ) from e
 
     async def request_stream_settings(
-        self, measurement_type: str
+        self, measurement_type: PmdMeasurementType
     ) -> MeasurementSettings:
         """Request stream settings for a specific measurement type."""
         try:
@@ -99,7 +97,7 @@ class PolarDevice:
                 bytearray(
                     [
                         PMD_CONTROL_OPERATION_CODE["GET"],
-                        PMD_MEASUREMENT_TYPES.index(measurement_type),
+                        measurement_type.value,
                     ]
                 ),
             )
@@ -119,7 +117,7 @@ class PolarDevice:
                 f"Failed to start stream with settings {settings}: {str(e)}"
             ) from e
 
-    async def stop_stream(self, measurement_type: str) -> None:
+    async def stop_stream(self, measurement_type: PmdMeasurementType) -> None:
         """Stop data stream for a specific measurement type."""
         try:
             await self.client.write_gatt_char(
@@ -127,7 +125,7 @@ class PolarDevice:
                 bytearray(
                     [
                         PMD_CONTROL_OPERATION_CODE["STOP"],
-                        PMD_MEASUREMENT_TYPES.index(measurement_type),
+                        measurement_type.value,
                     ]
                 ),
             )

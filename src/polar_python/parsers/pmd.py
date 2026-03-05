@@ -3,9 +3,9 @@
 from ..constants import (
     PMD_CONTROL_OPERATION_CODE,
     PMD_CONTROL_POINT_ERROR_CODES,
-    PMD_MEASUREMENT_TYPES,
     PMD_SETTING_TYPES,
     PMD_SETTING_TYPES_TO_FIELD_SIZES,
+    PmdMeasurementType,
 )
 from ..models import MeasurementSettings
 
@@ -17,11 +17,7 @@ def parse_pmd_data(data: bytearray) -> MeasurementSettings:
         error_code_index = data[3]
         more_frames = data[4] != 0
 
-        measurement_type = (
-            PMD_MEASUREMENT_TYPES[measurement_type_index]
-            if measurement_type_index < len(PMD_MEASUREMENT_TYPES)
-            else "UNKNOWN"
-        )
+        measurement_type = PmdMeasurementType(measurement_type_index).name
         error_code = (
             PMD_CONTROL_POINT_ERROR_CODES[error_code_index]
             if error_code_index < len(PMD_CONTROL_POINT_ERROR_CODES)
@@ -74,9 +70,7 @@ def build_measurement_settings(
     data = bytearray()
     data.append(PMD_CONTROL_OPERATION_CODE["START"])
 
-    measurement_type_index = PMD_MEASUREMENT_TYPES.index(
-        measurement_settings.measurement_type
-    )
+    measurement_type_index = measurement_settings.measurement_type.value
     data.append(measurement_type_index)
 
     for setting in measurement_settings.settings:
