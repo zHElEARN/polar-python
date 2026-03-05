@@ -6,17 +6,19 @@ from bleak.backends.characteristic import BleakGATTCharacteristic
 from bleak.backends.device import BLEDevice
 
 from . import exceptions, parsers
-from .constants import PmdControlOperationCode, PmdMeasurementType, PolarCharacteristic
-from .models import HRData, MeasurementSettings, SensorData
+from .constants import PmdControlOperationCode, PmdMeasurementType, PmdSettingType, PolarCharacteristic
+from .models import ACCData, ECGData, HRData, MeasurementSettings
 
 
 class PolarDevice:
-    DataCallback: TypeAlias = Callable[[SensorData], None]
+    ECGCallback: TypeAlias = Callable[[ECGData], None]
+    ACCCallback: TypeAlias = Callable[[ACCData], None]
     HRCallback: TypeAlias = Callable[[HRData], None]
 
     _client: BleakClient
     _queue_pmd_control: asyncio.Queue
-    _data_callback: DataCallback | None = None
+    _ecg_callback: ECGCallback | None = None
+    _acc_callback: ACCCallback | None = None
     _hr_callback: HRCallback | None = None
 
     def __init__(self, address_or_ble_device: str | BLEDevice) -> None:
@@ -63,51 +65,86 @@ class PolarDevice:
         )
         return parsers.parse_pmd_data(await self._queue_pmd_control.get())
 
-    async def start_stream(self, settings: MeasurementSettings) -> None:
-        """Start data stream with specified settings."""
+    async def start_ecg_stream(self, sample_rate: int, resolution: int, ecg_callback: ECGCallback) -> None:
+        """Start ECG data stream."""
+        ecg_settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.ECG,
+            settings=[
+                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+            ],
+        )
+        self._ecg_callback = ecg_callback
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
-            parsers.build_measurement_settings(settings),
+            parsers.build_measurement_settings(ecg_settings),
         )
 
-    async def stop_stream(self, measurement_type: PmdMeasurementType) -> None:
-        """Stop data stream for a specific measurement type."""
+    async def stop_ecg_stream(self) -> None:
+        """Stop ECG data stream."""
+        self._ecg_callback = None
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, measurement_type.value]),
+            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ECG.value]),
         )
 
-    async def start_heartrate_stream(self) -> None:
+    async def start_acc_stream(self, sample_rate: int, resolution: int, range: int, acc_callback: ACCCallback) -> None:
+        """Start ACC data stream."""
+        acc_settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.ACC,
+            settings=[
+                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
+            ],
+        )
+        self._acc_callback = acc_callback
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            parsers.build_measurement_settings(acc_settings),
+        )
+
+    async def stop_acc_stream(self) -> None:
+        """Stop ACC data stream."""
+        self._acc_callback = None
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ACC.value]),
+        )
+
+    async def start_hr_stream(self, hr_callback: HRCallback) -> None:
         """Start heart rate data stream."""
+        self._hr_callback = hr_callback
         await self._client.start_notify(
             PolarCharacteristic.HEART_RATE.value,
-            self._handle_heartrate_measurement,
+            self._handle_hr_measurement,
         )
 
-    async def stop_heartrate_stream(self) -> None:
+    async def stop_hr_stream(self) -> None:
         """Stop heart rate data stream."""
+        self._hr_callback = None
         await self._client.stop_notify(PolarCharacteristic.HEART_RATE.value)
 
-    def set_callback(
-        self,
-        data_callback: DataCallback | None = None,
-        heartrate_callback: HRCallback | None = None,
-    ) -> None:
-        self._data_callback = data_callback
-        self._hr_callback = heartrate_callback
-
-    def _handle_pmd_control(self, sender: BleakGATTCharacteristic | int, data: bytearray) -> None:
+    def _handle_pmd_control(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
         """Handle PMD control notifications."""
         self._queue_pmd_control.put_nowait(data)
 
-    def _handle_pmd_data(self, sender: BleakGATTCharacteristic | int, data: bytearray) -> None:
+    def _handle_pmd_data(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
         """Handle PMD data notifications."""
         parsed_data = parsers.parse_bluetooth_data(data)
-        if self._data_callback and parsed_data:
-            self._data_callback(parsed_data)
 
-    def _handle_heartrate_measurement(self, sender: BleakGATTCharacteristic | int, data: bytearray) -> None:
+        if parsed_data is None:
+            return
+        match parsed_data:
+            case ECGData() if self._ecg_callback:
+                self._ecg_callback(parsed_data)
+            case ACCData() if self._acc_callback:
+                self._acc_callback(parsed_data)
+            case _:
+                return
+
+    def _handle_hr_measurement(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
         """Handle heart rate measurement notifications."""
-        parsed_data = parsers.parse_heartrate_data(data)
+        parsed_data = parsers.parse_hr_data(data)
         if self._hr_callback:
             self._hr_callback(parsed_data)

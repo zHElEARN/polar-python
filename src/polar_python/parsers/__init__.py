@@ -6,7 +6,7 @@ from .compression import (
     parse_delta_frames_all,
 )
 from .ecg import parse_ecg_data
-from .heartrate import parse_heartrate_data
+from .hr import parse_hr_data
 from .pmd import build_measurement_settings, parse_pmd_data
 from .ppi import parse_ppi_data
 
@@ -27,7 +27,7 @@ __all__ = [
     # PPI parsing
     "parse_ppi_data",
     # Heart rate parsing
-    "parse_heartrate_data",
+    "parse_hr_data",
     # Bluetooth parsing
     "parse_bluetooth_data",
 ]
