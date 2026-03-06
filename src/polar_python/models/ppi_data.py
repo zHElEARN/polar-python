@@ -17,7 +17,7 @@ class PPIData:
         invalid_ppi: bool
         skin_contact_status: bool
         skin_contact_supported: bool
-        timestamp: int
+        # timestamp: int
 
     samples: list[PPISample]
 
@@ -79,7 +79,7 @@ class PPIData:
                         invalid_ppi=bool(sample["invalid_ppi"]),
                         skin_contact_status=bool(sample["skin_contact_status"]),
                         skin_contact_supported=bool(sample["skin_contact_supported"]),
-                        timestamp=current_timestamp,
+                        # timestamp=current_timestamp,
                     )
                 )
                 current_timestamp -= int(sample["ppi"]) * 1_000_000
@@ -95,7 +95,7 @@ class PPIData:
                         invalid_ppi=bool(sample["invalid_ppi"]),
                         skin_contact_status=bool(sample["skin_contact_status"]),
                         skin_contact_supported=bool(sample["skin_contact_supported"]),
-                        timestamp=0,
+                        # timestamp=0,
                     )
                 )
 
