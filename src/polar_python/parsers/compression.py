@@ -36,7 +36,7 @@ def parse_delta_frames_all(
             break
 
         delta_frame = data[offset : offset + length]
-        delta_samples = parse_delta_frame(delta_frame, channels, delta_size)
+        delta_samples = parse_delta_frame(delta_frame, channels, delta_size, bit_length)
 
         for delta in delta_samples:
             if len(delta) != channels:
@@ -92,6 +92,7 @@ def parse_delta_frame(
     data: Sequence[int],
     channels: int,
     bit_width: int,
+    total_bit_length: int,
 ) -> List[List[int]]:
     """Parse delta frame data into samples."""
     if len(data) == 0 or bit_width <= 0 or channels <= 0:
@@ -105,12 +106,9 @@ def parse_delta_frame(
     samples = []
     offset = 0
 
-    while offset + bit_width * channels <= len(bit_set):
+    while offset < total_bit_length and offset + bit_width * channels <= len(bit_set):
         channel_samples = []
         for _ in range(channels):
-            if offset + bit_width > len(bit_set):
-                break
-
             value = 0
             for i in range(bit_width):
                 if offset + i < len(bit_set):
