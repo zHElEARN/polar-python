@@ -43,8 +43,8 @@ async def main():
         def hr_callback(data: HRData):
             console.print(f"[bold green]Received HR Data:[/bold green] {data}")
 
-        await polar_device.start_ecg_stream(sample_rate=130, resolution=14, ecg_callback=ecg_callback)
-        await polar_device.start_acc_stream(sample_rate=25, resolution=16, range=2, acc_callback=acc_callback)
+        await polar_device.start_ecg_stream(ecg_callback=ecg_callback, sample_rate=130, resolution=14)
+        await polar_device.start_acc_stream(acc_callback=acc_callback, sample_rate=25, resolution=16, range=2)
         await polar_device.start_hr_stream(hr_callback=hr_callback)
 
         while not exit_event.is_set():

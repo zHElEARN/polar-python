@@ -7,18 +7,20 @@ from bleak.backends.device import BLEDevice
 
 from . import exceptions, parsers
 from .constants import PmdControlOperationCode, PmdMeasurementType, PmdSettingType, PolarCharacteristic
-from .models import ACCData, ECGData, HRData, MeasurementSettings
+from .models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
 
 
 class PolarDevice:
     ECGCallback: TypeAlias = Callable[[ECGData], None]
     ACCCallback: TypeAlias = Callable[[ACCData], None]
+    PPICallback: TypeAlias = Callable[[PPIData], None]
     HRCallback: TypeAlias = Callable[[HRData], None]
 
     _client: BleakClient
     _queue_pmd_control: asyncio.Queue
     _ecg_callback: ECGCallback | None = None
     _acc_callback: ACCCallback | None = None
+    _ppi_callback: PPICallback | None = None
     _hr_callback: HRCallback | None = None
 
     def __init__(self, address_or_ble_device: str | BLEDevice) -> None:
@@ -65,7 +67,7 @@ class PolarDevice:
         )
         return parsers.parse_pmd_data(await self._queue_pmd_control.get())
 
-    async def start_ecg_stream(self, sample_rate: int, resolution: int, ecg_callback: ECGCallback) -> None:
+    async def start_ecg_stream(self, ecg_callback: ECGCallback, sample_rate: int, resolution: int) -> None:
         """Start ECG data stream."""
         ecg_settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.ECG,
@@ -88,7 +90,7 @@ class PolarDevice:
             bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ECG.value]),
         )
 
-    async def start_acc_stream(self, sample_rate: int, resolution: int, range: int, acc_callback: ACCCallback) -> None:
+    async def start_acc_stream(self, acc_callback: ACCCallback, sample_rate: int, resolution: int, range: int, channels: int | None = None) -> None:
         """Start ACC data stream."""
         acc_settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.ACC,
@@ -96,6 +98,13 @@ class PolarDevice:
                 MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
                 MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
                 MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
+            ]
+            if channels is None
+            else [
+                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
+                MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
             ],
         )
         self._acc_callback = acc_callback
@@ -110,6 +119,23 @@ class PolarDevice:
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
             bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ACC.value]),
+        )
+
+    async def start_ppi_stream(self, ppi_callback: PPICallback) -> None:
+        """Start PPI data stream."""
+        ppi_settings = MeasurementSettings(measurement_type=PmdMeasurementType.PPI, settings=[])
+        self._ppi_callback = ppi_callback
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            parsers.build_measurement_settings(ppi_settings),
+        )
+
+    async def stop_ppi_stream(self) -> None:
+        """Stop PPI data stream."""
+        self._ppi_callback = None
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPI.value]),
         )
 
     async def start_hr_stream(self, hr_callback: HRCallback) -> None:
@@ -140,6 +166,8 @@ class PolarDevice:
                 self._ecg_callback(parsed_data)
             case ACCData() if self._acc_callback:
                 self._acc_callback(parsed_data)
+            case PPIData() if self._ppi_callback:
+                self._ppi_callback(parsed_data)
             case _:
                 return
 
