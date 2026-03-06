@@ -23,6 +23,7 @@ class PolarDevice:
     _client: BleakClient
     _queue_pmd_control: asyncio.Queue
     _factors: dict[PmdMeasurementType, float]
+
     _ecg_callback: ECGCallback | None = None
     _acc_callback: ACCCallback | None = None
     _ppi_callback: PPICallback | None = None
@@ -76,80 +77,80 @@ class PolarDevice:
         )
         return MeasurementSettings.from_bytes(await self._queue_pmd_control.get())
 
+    async def start_stream(self, settings: MeasurementSettings) -> None:
+        """Generic method to start a PMD stream and extract factor if present."""
+        await self._client.write_gatt_char(PolarCharacteristic.PMD_CONTROL_POINT.value, settings.to_bytes())
+        response = MeasurementSettings.from_bytes(await self._queue_pmd_control.get())
+        for setting in response.settings:
+            if setting.type == PmdSettingType.FACTOR and setting.values:
+                raw_int_factor = setting.values[0]
+                real_factor = struct.unpack("<f", struct.pack("<I", raw_int_factor))[0]
+                self._factors[settings.measurement_type] = real_factor
+                break
+
+    async def stop_stream(self, measurement_type: PmdMeasurementType) -> None:
+        """Generic method to stop a PMD stream and clean up its factor."""
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            bytearray([PmdControlOperationCode.STOP, measurement_type.value]),
+        )
+        self._factors.pop(measurement_type, None)
+
     async def start_ecg_stream(self, ecg_callback: ECGCallback, sample_rate: int, resolution: int) -> None:
         """Start ECG data stream."""
-        ecg_settings = MeasurementSettings(
+        self._ecg_callback = ecg_callback
+        settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.ECG,
             settings=[
                 MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
                 MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
             ],
         )
-        self._ecg_callback = ecg_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            ecg_settings.to_bytes(),
-        )
+        await self.start_stream(settings)
 
     async def stop_ecg_stream(self) -> None:
         """Stop ECG data stream."""
         self._ecg_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ECG.value]),
-        )
+        await self.stop_stream(PmdMeasurementType.ECG)
 
     async def start_acc_stream(self, acc_callback: ACCCallback, sample_rate: int, resolution: int, range: int, channels: int | None = None) -> None:
         """Start ACC data stream."""
-        acc_settings = MeasurementSettings(
-            measurement_type=PmdMeasurementType.ACC,
-            settings=[
-                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
-                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
-                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
-            ]
-            if channels is None
-            else [
-                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
-                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
-                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
-                MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
-            ],
-        )
         self._acc_callback = acc_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            acc_settings.to_bytes(),
+
+        setting_list = [
+            MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+            MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+            MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
+        ]
+        if channels is not None:
+            setting_list.append(MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]))
+
+        settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.ACC,
+            settings=setting_list,
         )
+        await self.start_stream(settings)
 
     async def stop_acc_stream(self) -> None:
         """Stop ACC data stream."""
         self._acc_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.ACC.value]),
-        )
+        await self.stop_stream(PmdMeasurementType.ACC)
 
     async def start_ppi_stream(self, ppi_callback: PPICallback) -> None:
         """Start PPI data stream."""
-        ppi_settings = MeasurementSettings(measurement_type=PmdMeasurementType.PPI, settings=[])
         self._ppi_callback = ppi_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            ppi_settings.to_bytes(),
-        )
+        settings = MeasurementSettings(measurement_type=PmdMeasurementType.PPI, settings=[])
+        await self.start_stream(settings)
 
     async def stop_ppi_stream(self) -> None:
         """Stop PPI data stream."""
         self._ppi_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPI.value]),
-        )
+        await self.stop_stream(PmdMeasurementType.PPI)
 
     async def start_ppg_stream(self, ppg_callback: PPGCallback, sample_rate: int, resolution: int, channels: int) -> None:
         """Start PPG data stream."""
-        ppg_settings = MeasurementSettings(
+        self._ppg_callback = ppg_callback
+        settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.PPG,
             settings=[
                 MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
@@ -157,23 +158,17 @@ class PolarDevice:
                 MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
             ],
         )
-        self._ppg_callback = ppg_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            ppg_settings.to_bytes(),
-        )
+        await self.start_stream(settings)
 
     async def stop_ppg_stream(self) -> None:
         """Stop PPG data stream."""
         self._ppg_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPG.value]),
-        )
+        await self.stop_stream(PmdMeasurementType.PPG)
 
     async def start_gyro_stream(self, gyro_callback: GyroCallback, sample_rate: int, resolution: int, range: int, channels: int) -> None:
         """Start Gyro data stream."""
-        gyro_settings = MeasurementSettings(
+        self._gyro_callback = gyro_callback
+        settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.GYRO,
             settings=[
                 MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
@@ -182,23 +177,17 @@ class PolarDevice:
                 MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
             ],
         )
-        self._gyro_callback = gyro_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            gyro_settings.to_bytes(),
-        )
+        await self.start_stream(settings)
 
     async def stop_gyro_stream(self) -> None:
         """Stop Gyro data stream."""
         self._gyro_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.GYRO.value]),
-        )
+        await self.stop_stream(PmdMeasurementType.GYRO)
 
     async def start_mag_stream(self, mag_callback: MAGCallback, sample_rate: int, resolution: int, range: int, channels: int) -> None:
         """Start MAG data stream."""
-        mag_settings = MeasurementSettings(
+        self._mag_callback = mag_callback
+        settings = MeasurementSettings(
             measurement_type=PmdMeasurementType.MAG,
             settings=[
                 MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
@@ -207,29 +196,12 @@ class PolarDevice:
                 MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
             ],
         )
-        self._mag_callback = mag_callback
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            mag_settings.to_bytes(),
-        )
-
-        settings = MeasurementSettings.from_bytes(await self._queue_pmd_control.get())
-
-        for setting in settings.settings:
-            if setting.type == PmdSettingType.FACTOR and setting.values:
-                raw_int_factor = setting.values[0]
-                real_factor = struct.unpack("<f", struct.pack("<I", raw_int_factor))[0]
-                self._factors[PmdMeasurementType.MAG] = real_factor
-                break
+        await self.start_stream(settings)
 
     async def stop_mag_stream(self) -> None:
         """Stop MAG data stream."""
         self._mag_callback = None
-        await self._client.write_gatt_char(
-            PolarCharacteristic.PMD_CONTROL_POINT.value,
-            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.MAG.value]),
-        )
-        self._factors.pop(PmdMeasurementType.MAG)
+        await self.stop_stream(PmdMeasurementType.MAG)
 
     async def start_hr_stream(self, hr_callback: HRCallback) -> None:
         """Start heart rate data stream."""
