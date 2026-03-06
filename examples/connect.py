@@ -1,4 +1,5 @@
 import asyncio
+from contextlib import asynccontextmanager
 
 import questionary
 from bleak import BleakScanner
@@ -41,6 +42,20 @@ def hr_callback(data: HRData):
     console.print(f"[bold green]HR:[/bold green] {data}")
 
 
+@asynccontextmanager
+async def get_connected_device(device):
+    pd = PolarDevice(device)
+    with console.status(f"[bold yellow]Connecting to [bold white]{device.name}[/bold white]...[/bold yellow]", spinner="dots"):
+        await pd.connect()
+    try:
+        console.print(f"[bold green]Successfully connected to {device.name}.[/bold green]\n")
+        yield pd
+    finally:
+        with console.status(f"[bold yellow]Disconnecting from [bold white]{device.name}[/bold white]...[/bold yellow]", spinner="dots"):
+            await pd.disconnect()
+        console.print(f"[bold green]Disconnected from {device.name}.[/bold green]")
+
+
 async def main():
     with console.status("[bold yellow]Searching for Polar devices...[/bold yellow]", spinner="dots"):
         devices = await BleakScanner.discover()
@@ -67,7 +82,7 @@ async def main():
     console.print()
     console.print(Panel(f"[bold green]Selected:[/bold green] [bold white]{selected_device.name}[/bold white]\n[bold cyan]Address:[/bold cyan] {selected_device.address}", title="Connecting", border_style="green", expand=False))
 
-    async with PolarDevice(selected_device) as polar_device:
+    async with get_connected_device(selected_device) as polar_device:
         with console.status("[bold yellow]Fetching device features and settings...[/bold yellow]", spinner="dots"):
             available_features = await polar_device.get_available_features()
 
