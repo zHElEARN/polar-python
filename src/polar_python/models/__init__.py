@@ -4,6 +4,7 @@ from .acc_data import ACCData
 from .ecg_data import ECGData
 from .hr_data import HRData
 from .measurement_settings import MeasurementSettings
+from .pmd_data_frame import PmdDataFrame
 from .ppg_data import PPGData
 from .ppi_data import PPIData
 
@@ -17,4 +18,5 @@ __all__ = [
     "PPGData",
     "MeasurementSettings",
     "SensorData",
+    "PmdDataFrame",
 ]
