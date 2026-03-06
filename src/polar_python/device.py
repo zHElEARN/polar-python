@@ -7,7 +7,7 @@ from bleak.backends.device import BLEDevice
 
 from . import exceptions, parsers
 from .constants import PmdControlOperationCode, PmdMeasurementType, PmdSettingType, PolarCharacteristic
-from .models import ACCData, ECGData, HRData, MeasurementSettings, PPGData, PPIData
+from .models import ACCData, ECGData, GyroData, HRData, MeasurementSettings, PPGData, PPIData
 
 
 class PolarDevice:
@@ -15,6 +15,7 @@ class PolarDevice:
     ACCCallback: TypeAlias = Callable[[ACCData], None]
     PPICallback: TypeAlias = Callable[[PPIData], None]
     PPGCallback: TypeAlias = Callable[[PPGData], None]
+    GyroCallback: TypeAlias = Callable[[GyroData], None]
     HRCallback: TypeAlias = Callable[[HRData], None]
 
     _client: BleakClient
@@ -23,6 +24,7 @@ class PolarDevice:
     _acc_callback: ACCCallback | None = None
     _ppi_callback: PPICallback | None = None
     _ppg_callback: PPGCallback | None = None
+    _gyro_callback: GyroCallback | None = None
     _hr_callback: HRCallback | None = None
 
     def __init__(self, address_or_ble_device: str | BLEDevice) -> None:
@@ -164,6 +166,31 @@ class PolarDevice:
             bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPG.value]),
         )
 
+    async def start_gyro_stream(self, gyro_callback: GyroCallback, sample_rate: int, resolution: int, range: int, channels: int) -> None:
+        """Start Gyro data stream."""
+        gyro_settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.GYRO,
+            settings=[
+                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RANGE, values=[range]),
+                MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
+            ],
+        )
+        self._gyro_callback = gyro_callback
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            gyro_settings.to_bytes(),
+        )
+
+    async def stop_gyro_stream(self) -> None:
+        """Stop Gyro data stream."""
+        self._gyro_callback = None
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.GYRO.value]),
+        )
+
     async def start_hr_stream(self, hr_callback: HRCallback) -> None:
         """Start heart rate data stream."""
         self._hr_callback = hr_callback
@@ -196,6 +223,8 @@ class PolarDevice:
                 self._ppi_callback(parsed_data)
             case PPGData() if self._ppg_callback:
                 self._ppg_callback(parsed_data)
+            case GyroData() if self._gyro_callback:
+                self._gyro_callback(parsed_data)
             case _:
                 return
 
