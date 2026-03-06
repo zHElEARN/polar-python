@@ -65,7 +65,7 @@ class PolarDevice:
             PolarCharacteristic.PMD_CONTROL_POINT.value,
             bytearray([PmdControlOperationCode.GET, measurement_type.value]),
         )
-        return parsers.parse_pmd_data(await self._queue_pmd_control.get())
+        return MeasurementSettings.from_bytes(await self._queue_pmd_control.get())
 
     async def start_ecg_stream(self, ecg_callback: ECGCallback, sample_rate: int, resolution: int) -> None:
         """Start ECG data stream."""
@@ -79,7 +79,7 @@ class PolarDevice:
         self._ecg_callback = ecg_callback
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
-            parsers.build_measurement_settings(ecg_settings),
+            ecg_settings.to_bytes(),
         )
 
     async def stop_ecg_stream(self) -> None:
@@ -110,7 +110,7 @@ class PolarDevice:
         self._acc_callback = acc_callback
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
-            parsers.build_measurement_settings(acc_settings),
+            acc_settings.to_bytes(),
         )
 
     async def stop_acc_stream(self) -> None:
@@ -127,7 +127,7 @@ class PolarDevice:
         self._ppi_callback = ppi_callback
         await self._client.write_gatt_char(
             PolarCharacteristic.PMD_CONTROL_POINT.value,
-            parsers.build_measurement_settings(ppi_settings),
+            ppi_settings.to_bytes(),
         )
 
     async def stop_ppi_stream(self) -> None:
@@ -157,7 +157,7 @@ class PolarDevice:
 
     def _handle_pmd_data(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
         """Handle PMD data notifications."""
-        parsed_data = parsers.parse_bluetooth_data(data)
+        parsed_data = parsers.parse_polar_data(data)
 
         if parsed_data is None:
             return
