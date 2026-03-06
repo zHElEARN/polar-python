@@ -7,8 +7,7 @@ from rich import inspect
 from rich.console import Console
 
 from polar_python import PolarDevice
-from polar_python.models import ACCData, HRData, PPIData
-from polar_python.models.ppg_data import PPGData
+from polar_python.models import ACCData, GyroData, HRData, MAGData, PPGData, PPIData
 
 console = Console()
 exit_event = threading.Event()
@@ -44,12 +43,20 @@ async def main():
         def ppg_callback(data: PPGData):
             console.print(f"[bold green]Received PPG Data:[/bold green] {data}")
 
+        def gyro_callback(data: GyroData):
+            console.print(f"[bold green]Received Gyro Data:[/bold green] {data}")
+
+        def mag_callback(data: MAGData):
+            console.print(f"[bold green]Received MAG Data:[/bold green] {data}")
+
         def hr_callback(data: HRData):
             console.print(f"[bold green]Received HR Data:[/bold green] {data}")
 
         await polar_device.start_acc_stream(acc_callback=acc_callback, sample_rate=52, resolution=16, range=8, channels=3)
         await polar_device.start_ppi_stream(ppi_callback=ppi_callback)
         await polar_device.start_ppg_stream(ppg_callback=ppg_callback, sample_rate=55, resolution=22, channels=4)
+        await polar_device.start_gyro_stream(gyro_callback=gyro_callback, sample_rate=52, resolution=16, range=2000, channels=3)
+        await polar_device.start_mag_stream(mag_callback=mag_callback, sample_rate=20, resolution=16, range=50, channels=3)
         await polar_device.start_hr_stream(hr_callback=hr_callback)
 
         while not exit_event.is_set():
