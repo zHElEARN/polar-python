@@ -1,14 +1,33 @@
 import asyncio
+import importlib.util
+import sys
 from contextlib import asynccontextmanager
 
-import questionary
 from bleak import BleakScanner
+
+from . import PolarDevice
+from .models import ACCData, ECGData, GyroData, HRData, MAGData, PPGData, PPIData
+
+
+def check_dependencies():
+    missing = []
+    for dep in ["questionary", "rich"]:
+        if importlib.util.find_spec(dep) is None:
+            missing.append(dep)
+
+    if missing:
+        print(f"Error: Missing optional dependencies: {', '.join(missing)}")
+        print("To use the CLI tool, please install the library with 'cli' extras:")
+        print('pip install "polar-python[cli]"')
+        sys.exit(1)
+
+
+check_dependencies()
+
+import questionary
 from rich.console import Console
 from rich.panel import Panel
 from rich.table import Table
-
-from polar_python import PolarDevice
-from polar_python.models import ACCData, ECGData, GyroData, HRData, MAGData, PPGData, PPIData
 
 console = Console()
 exit_event = asyncio.Event()
@@ -168,10 +187,14 @@ async def main():
         console.print("\n[bold green]Scan and configuration test completed successfully.[/bold green]")
 
 
-if __name__ == "__main__":
+def run():
     try:
         asyncio.run(main())
     except KeyboardInterrupt:
         console.print("\n[bold red]Process interrupted.[/bold red]")
     except Exception as e:
         console.print(f"\n[bold red]Error:[/bold red] {e}")
+
+
+if __name__ == "__main__":
+    run()

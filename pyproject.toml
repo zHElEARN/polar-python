@@ -7,6 +7,9 @@ readme = "README.md"
 license = { text = "MIT" }
 requires-python = ">=3.10"
 dependencies = ["bleak"]
+
+[project.optional-dependencies]
+cli = ["rich>=13.0.0", "questionary>=2.0.0"]
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
@@ -34,3 +37,6 @@ line-length = 320
 [tool.ruff.lint]
 select = ["E", "F", "I"]
 ignore = ["E501"]
+
+[tool.ruff.lint.per-file-ignores]
+"src/polar_python/cli.py" = ["E402"]
