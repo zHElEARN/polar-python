@@ -7,20 +7,19 @@ from ..parsers.compression import parse_delta_frames_all
 from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 
-class PPGType(IntEnum):
-    """Enumeration of PPG data types."""
-
-    PPG1 = 1
-    PPG3_AMBIENT1 = 4
-    PPG3 = 7
-    PPG17 = 5
-    PPG21 = 6
-    UNKNOWN = 18
-
-
 @dataclass
 class PPGData:
     """Represents photoplethysmogram data."""
+
+    class PPGType(IntEnum):
+        """Enumeration of PPG data types."""
+
+        PPG1 = 1
+        PPG3_AMBIENT1 = 4
+        PPG3 = 7
+        PPG17 = 5
+        PPG21 = 6
+        UNKNOWN = 18
 
     timestamp: int
     samples: list[list[int]]
@@ -63,7 +62,7 @@ class PPGData:
 
             ppg_samples.append(sample)
 
-        return cls(timestamp=frame.timestamp, samples=ppg_samples, type=PPGType.PPG3_AMBIENT1)
+        return cls(timestamp=frame.timestamp, samples=ppg_samples, type=cls.PPGType.PPG3_AMBIENT1)
 
     @classmethod
     def _data_from_compressed_type_0(cls, frame: PmdDataFrame, _unused_get_factor: Callable[[PmdMeasurementType], float]) -> "PPGData":
@@ -78,4 +77,4 @@ class PPGData:
             ambient = sample[3]
             ppg_samples.append([ppg0, ppg1, ppg2, ambient])
 
-        return cls(timestamp=frame.timestamp, samples=ppg_samples, type=PPGType.PPG3_AMBIENT1)
+        return cls(timestamp=frame.timestamp, samples=ppg_samples, type=cls.PPGType.PPG3_AMBIENT1)
