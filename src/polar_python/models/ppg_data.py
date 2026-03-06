@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Callable
 
-from ..constants import PmdMeasurementType
 from ..parsers.compression import parse_delta_frames_all
 from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
@@ -30,10 +28,10 @@ class PPGData:
     TYPE_0_CHANNELS_IN_SAMPLE = 4
 
     @classmethod
-    def from_dataframe(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float] = lambda _: 1.0) -> "PPGData":
+    def from_dataframe(cls, frame: PmdDataFrame) -> "PPGData":
         if frame.is_compressed_frame:
             if frame.frame_type == PmdDataFrameType.TYPE_0:
-                return cls._data_from_compressed_type_0(frame, get_factor)
+                return cls._data_from_compressed_type_0(frame)
             else:
                 raise ValueError(f"Compressed FrameType: {frame.frame_type.name} is not currently supported by PPG data parser")
         else:
@@ -65,7 +63,7 @@ class PPGData:
         return cls(timestamp=frame.timestamp, samples=ppg_samples, type=cls.PPGType.PPG3_AMBIENT1)
 
     @classmethod
-    def _data_from_compressed_type_0(cls, frame: PmdDataFrame, _unused_get_factor: Callable[[PmdMeasurementType], float]) -> "PPGData":
+    def _data_from_compressed_type_0(cls, frame: PmdDataFrame) -> "PPGData":
         """Parse compressed TYPE_0 data (PPG3_AMBIENT1)."""
         samples = parse_delta_frames_all(frame.data_content, channels=cls.TYPE_0_CHANNELS_IN_SAMPLE, resolution=cls.TYPE_0_SAMPLE_SIZE_IN_BITS, data_type="signed_int")
 

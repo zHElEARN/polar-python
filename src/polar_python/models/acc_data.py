@@ -1,7 +1,5 @@
 from dataclasses import dataclass
-from typing import Callable
 
-from ..constants import PmdMeasurementType
 from ..parsers.compression import parse_delta_frames_all
 from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
@@ -22,12 +20,12 @@ class ACCData:
     TYPE_1_CHANNELS_IN_SAMPLE = 3
 
     @classmethod
-    def from_dataframe(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float] = lambda _: 1.0) -> "ACCData":
+    def from_dataframe(cls, frame: PmdDataFrame) -> "ACCData":
         if frame.is_compressed_frame:
             if frame.frame_type == PmdDataFrameType.TYPE_0:
-                return cls._data_from_compressed_type_0(frame, get_factor)
+                return cls._data_from_compressed_type_0(frame)
             elif frame.frame_type == PmdDataFrameType.TYPE_1:
-                return cls._data_from_compressed_type_1(frame, get_factor)
+                return cls._data_from_compressed_type_1(frame)
             else:
                 raise ValueError(f"Compressed FrameType: {frame.frame_type} is not supported by ACC data parser")
         else:
@@ -89,11 +87,11 @@ class ACCData:
         return cls(timestamp=frame.timestamp, data=acc_samples)
 
     @classmethod
-    def _data_from_compressed_type_0(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float]) -> "ACCData":
+    def _data_from_compressed_type_0(cls, frame: PmdDataFrame) -> "ACCData":
         """Parse compressed TYPE_0 data (Note: special Wolfi type, see SAGRFC85.3)."""
         samples = parse_delta_frames_all(frame.data_content, channels=cls.TYPE_0_CHANNELS_IN_SAMPLE, resolution=16, data_type="signed_int")
 
-        factor = get_factor(frame.measurement_type)
+        factor = frame.factor
         acc_factor = factor * 1000.0  # type 0 data arrives in G units, convert to milliG
 
         acc_samples = []
@@ -106,11 +104,11 @@ class ACCData:
         return cls(timestamp=frame.timestamp, data=acc_samples)
 
     @classmethod
-    def _data_from_compressed_type_1(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float]) -> "ACCData":
+    def _data_from_compressed_type_1(cls, frame: PmdDataFrame) -> "ACCData":
         """Parse compressed TYPE_1 data."""
         samples = parse_delta_frames_all(frame.data_content, channels=cls.TYPE_1_CHANNELS_IN_SAMPLE, resolution=cls.TYPE_1_SAMPLE_SIZE_IN_BITS, data_type="signed_int")
 
-        factor = get_factor(frame.measurement_type)
+        factor = frame.factor
 
         acc_samples = []
         for sample in samples:

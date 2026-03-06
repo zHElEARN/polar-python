@@ -1,8 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
-from typing import Callable, List
 
-from ..constants import PmdMeasurementType
 from ..parsers.compression import parse_delta_frames_all
 from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
@@ -39,7 +37,7 @@ class MAGData:
     """Represents magnetometer data."""
 
     timestamp: int
-    data: List[MAGSample]
+    data: list[MAGSample]
 
     TYPE_0_SAMPLE_SIZE_IN_BYTES = 2
     TYPE_0_SAMPLE_SIZE_IN_BITS = TYPE_0_SAMPLE_SIZE_IN_BYTES * 8
@@ -50,23 +48,23 @@ class MAGData:
     TYPE_1_CHANNELS_IN_SAMPLE = 4
 
     @classmethod
-    def from_dataframe(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float] = lambda _: 1.0) -> "MAGData":
+    def from_dataframe(cls, frame: PmdDataFrame) -> "MAGData":
         if frame.is_compressed_frame:
             if frame.frame_type == PmdDataFrameType.TYPE_0:
-                return cls._data_from_compressed_type_0(frame, get_factor)
+                return cls._data_from_compressed_type_0(frame)
             elif frame.frame_type == PmdDataFrameType.TYPE_1:
-                return cls._data_from_compressed_type_1(frame, get_factor)
+                return cls._data_from_compressed_type_1(frame)
             else:
                 raise ValueError(f"Compressed FrameType: {frame.frame_type} is not supported by Magnetometer data parser")
         else:
             raise ValueError(f"Raw FrameType: {frame.frame_type} is not supported by Magnetometer data parser")
 
     @classmethod
-    def _data_from_compressed_type_0(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float]) -> "MAGData":
+    def _data_from_compressed_type_0(cls, frame: PmdDataFrame) -> "MAGData":
         """Parse compressed TYPE_0 magnetometer data."""
         samples = parse_delta_frames_all(frame.data_content, channels=cls.TYPE_0_CHANNELS_IN_SAMPLE, resolution=cls.TYPE_0_SAMPLE_SIZE_IN_BITS, data_type="signed_int")
 
-        factor = get_factor(frame.measurement_type)
+        factor = frame.factor
 
         mag_samples = []
         for sample in samples:
@@ -78,11 +76,11 @@ class MAGData:
         return cls(timestamp=frame.timestamp, data=mag_samples)
 
     @classmethod
-    def _data_from_compressed_type_1(cls, frame: PmdDataFrame, get_factor: Callable[[PmdMeasurementType], float]) -> "MAGData":
+    def _data_from_compressed_type_1(cls, frame: PmdDataFrame) -> "MAGData":
         """Parse compressed TYPE_1 magnetometer data."""
         samples = parse_delta_frames_all(frame.data_content, channels=cls.TYPE_1_CHANNELS_IN_SAMPLE, resolution=cls.TYPE_1_SAMPLE_SIZE_IN_BITS, data_type="signed_int")
 
-        factor = get_factor(frame.measurement_type)
+        factor = frame.factor
         unit_conversion_factor = 1000.0  # type 1 data arrives in milliGauss units
 
         mag_samples = []

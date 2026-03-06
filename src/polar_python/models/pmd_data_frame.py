@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import IntEnum
+from typing import Callable
 
 from ..constants import TIMESTAMP_OFFSET, PmdMeasurementType
 
@@ -27,12 +28,13 @@ class PmdDataFrame:
     frame_type: PmdDataFrameType
     is_compressed_frame: bool
     data_content: bytearray
+    factor: float
 
     DELTA_FRAME_BIT_MASK = 0x80
     DATA_FRAME_BIT_MASK = 0x7F
 
     @classmethod
-    def from_bytes(cls, data: bytearray) -> "PmdDataFrame":
+    def from_bytes(cls, data: bytearray, get_factor: Callable[[PmdMeasurementType], float]) -> "PmdDataFrame":
         if len(data) < 10:
             raise ValueError("Data is too short to parse PmdDataFrame")
 
@@ -47,7 +49,15 @@ class PmdDataFrame:
             raise ValueError(f"FrameType id: {frame_type_val} is not implemented")
 
         is_compressed_frame = (frame_type_byte & cls.DELTA_FRAME_BIT_MASK) > 0
-
         data_content = data[10:]
 
-        return cls(measurement_type=measurement_type, timestamp=timestamp, frame_type=frame_type, is_compressed_frame=is_compressed_frame, data_content=data_content)
+        factor = get_factor(measurement_type)
+
+        return cls(
+            measurement_type=measurement_type,
+            timestamp=timestamp,
+            frame_type=frame_type,
+            is_compressed_frame=is_compressed_frame,
+            data_content=data_content,
+            factor=factor,
+        )

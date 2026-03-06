@@ -1,4 +1,5 @@
 import asyncio
+import struct
 from typing import Callable, TypeAlias
 
 from bleak import BleakClient
@@ -21,6 +22,7 @@ class PolarDevice:
 
     _client: BleakClient
     _queue_pmd_control: asyncio.Queue
+    _factors: dict[PmdMeasurementType, float]
     _ecg_callback: ECGCallback | None = None
     _acc_callback: ACCCallback | None = None
     _ppi_callback: PPICallback | None = None
@@ -37,6 +39,7 @@ class PolarDevice:
         """
         self._client = BleakClient(address_or_ble_device)
         self._queue_pmd_control = asyncio.Queue()
+        self._factors = {}
 
     async def connect(self) -> None:
         """Connect to the Polar device."""
@@ -210,6 +213,15 @@ class PolarDevice:
             mag_settings.to_bytes(),
         )
 
+        settings = MeasurementSettings.from_bytes(await self._queue_pmd_control.get())
+
+        for setting in settings.settings:
+            if setting.type == PmdSettingType.FACTOR and setting.values:
+                raw_int_factor = setting.values[0]
+                real_factor = struct.unpack("<f", struct.pack("<I", raw_int_factor))[0]
+                self._factors[PmdMeasurementType.MAG] = real_factor
+                break
+
     async def stop_mag_stream(self) -> None:
         """Stop MAG data stream."""
         self._mag_callback = None
@@ -217,6 +229,7 @@ class PolarDevice:
             PolarCharacteristic.PMD_CONTROL_POINT.value,
             bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.MAG.value]),
         )
+        self._factors.pop(PmdMeasurementType.MAG)
 
     async def start_hr_stream(self, hr_callback: HRCallback) -> None:
         """Start heart rate data stream."""
@@ -237,7 +250,7 @@ class PolarDevice:
 
     def _handle_pmd_data(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
         """Handle PMD data notifications."""
-        parsed_data = parsers.parse_polar_data(data)
+        parsed_data = parsers.parse_polar_data(data, self._factors.get)
 
         if parsed_data is None:
             return
