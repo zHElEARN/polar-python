@@ -1,4 +1,4 @@
-"""Accelerometer (ACC) data parsing functions."""
+"""ACC (Accelerometer) data parsing functions."""
 
 from typing import Sequence
 
@@ -6,9 +6,7 @@ from ..models import ACCData
 from .compression import parse_delta_frames_all
 
 
-def parse_acc_data(
-    data: bytearray, timestamp: int, frame_type: int, factor: float = 1.0
-) -> ACCData:
+def parse_acc_data(data: bytearray, timestamp: int, frame_type: int, factor: float = 1.0) -> ACCData:
     """Parse accelerometer data from a list of integers based on frame type."""
     is_compressed = (frame_type & 0x80) != 0
     actual_frame_type = frame_type & 0x7F
@@ -37,12 +35,8 @@ def parse_raw_acc_data(data: bytearray, timestamp: int, frame_type: int) -> ACCD
         for i in range(10, len(data), step * channels):
             if i + step * channels <= len(data):
                 x = int.from_bytes(data[i : i + step], byteorder="little", signed=True)
-                y = int.from_bytes(
-                    data[i + step : i + 2 * step], byteorder="little", signed=True
-                )
-                z = int.from_bytes(
-                    data[i + 2 * step : i + 3 * step], byteorder="little", signed=True
-                )
+                y = int.from_bytes(data[i + step : i + 2 * step], byteorder="little", signed=True)
+                z = int.from_bytes(data[i + 2 * step : i + 3 * step], byteorder="little", signed=True)
                 acc_data.append((x, y, z))
     elif frame_type == 0x01:  # TYPE_1: 2 bytes per axis
         step = 2
@@ -50,12 +44,8 @@ def parse_raw_acc_data(data: bytearray, timestamp: int, frame_type: int) -> ACCD
         for i in range(10, len(data), step * channels):
             if i + step * channels <= len(data):
                 x = int.from_bytes(data[i : i + step], byteorder="little", signed=True)
-                y = int.from_bytes(
-                    data[i + step : i + 2 * step], byteorder="little", signed=True
-                )
-                z = int.from_bytes(
-                    data[i + 2 * step : i + 3 * step], byteorder="little", signed=True
-                )
+                y = int.from_bytes(data[i + step : i + 2 * step], byteorder="little", signed=True)
+                z = int.from_bytes(data[i + 2 * step : i + 3 * step], byteorder="little", signed=True)
                 acc_data.append((x, y, z))
     elif frame_type == 0x02:  # TYPE_2: 3 bytes per axis
         step = 3
@@ -63,20 +53,14 @@ def parse_raw_acc_data(data: bytearray, timestamp: int, frame_type: int) -> ACCD
         for i in range(10, len(data), step * channels):
             if i + step * channels <= len(data):
                 x = int.from_bytes(data[i : i + step], byteorder="little", signed=True)
-                y = int.from_bytes(
-                    data[i + step : i + 2 * step], byteorder="little", signed=True
-                )
-                z = int.from_bytes(
-                    data[i + 2 * step : i + 3 * step], byteorder="little", signed=True
-                )
+                y = int.from_bytes(data[i + step : i + 2 * step], byteorder="little", signed=True)
+                z = int.from_bytes(data[i + 2 * step : i + 3 * step], byteorder="little", signed=True)
                 acc_data.append((x, y, z))
 
     return ACCData(timestamp=timestamp, data=acc_data)
 
 
-def parse_compressed_acc_data(
-    data: Sequence[int], timestamp: int, frame_type: int, factor: float
-) -> ACCData:
+def parse_compressed_acc_data(data: Sequence[int], timestamp: int, frame_type: int, factor: float) -> ACCData:
     """Parse compressed accelerometer data."""
     if frame_type == 0x00:  # Compressed TYPE_0
         # type 0 data arrives in G units, convert to milliG
