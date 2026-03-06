@@ -13,7 +13,7 @@ console = Console()
 exit_event = threading.Event()
 
 
-def handle_exit(signum, frame):
+def handle_exit(*_):
     console.print("[bold red]Received exit signal[/bold red]")
     exit_event.set()
 
