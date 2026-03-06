@@ -8,6 +8,7 @@ from rich.console import Console
 
 from polar_python import PolarDevice
 from polar_python.models import ACCData, HRData, PPIData
+from polar_python.models.ppg_data import PPGData
 
 console = Console()
 exit_event = threading.Event()
@@ -40,11 +41,15 @@ async def main():
         def ppi_callback(data: PPIData):
             console.print(f"[bold green]Received PPI Data:[/bold green] {data}")
 
+        def ppg_callback(data: PPGData):
+            console.print(f"[bold green]Received PPG Data:[/bold green] {data}")
+
         def hr_callback(data: HRData):
             console.print(f"[bold green]Received HR Data:[/bold green] {data}")
 
         await polar_device.start_acc_stream(acc_callback=acc_callback, sample_rate=52, resolution=16, range=8, channels=3)
         await polar_device.start_ppi_stream(ppi_callback=ppi_callback)
+        await polar_device.start_ppg_stream(ppg_callback=ppg_callback, sample_rate=55, resolution=22, channels=4)
         await polar_device.start_hr_stream(hr_callback=hr_callback)
 
         while not exit_event.is_set():

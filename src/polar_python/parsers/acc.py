@@ -11,10 +11,6 @@ def parse_acc_data(data: bytearray, timestamp: int, frame_type: int, factor: flo
     is_compressed = (frame_type & 0x80) != 0
     actual_frame_type = frame_type & 0x7F
 
-    # print(
-    #     f"Frame type: {frame_type}, Is compressed: {is_compressed}, Actual frame type: {actual_frame_type}"
-    # )
-
     if is_compressed:
         return parse_compressed_acc_data(data, timestamp, actual_frame_type, factor)
     else:

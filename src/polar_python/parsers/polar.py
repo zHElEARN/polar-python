@@ -2,6 +2,7 @@ from ..constants import TIMESTAMP_OFFSET, PmdMeasurementType
 from ..models import SensorData
 from .acc import parse_acc_data
 from .ecg import parse_ecg_data
+from .ppg import parse_ppg_data
 from .ppi import parse_ppi_data
 
 
@@ -17,6 +18,8 @@ def parse_polar_data(data: bytearray) -> SensorData | None:
             return parse_ecg_data(data, timestamp)
         case PmdMeasurementType.ACC:
             return parse_acc_data(data, timestamp, frame_type)
+        case PmdMeasurementType.PPG:
+            return parse_ppg_data(data, timestamp, frame_type)
         case PmdMeasurementType.PPI:
             return parse_ppi_data(data, timestamp)
         case _:

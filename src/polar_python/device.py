@@ -7,13 +7,14 @@ from bleak.backends.device import BLEDevice
 
 from . import exceptions, parsers
 from .constants import PmdControlOperationCode, PmdMeasurementType, PmdSettingType, PolarCharacteristic
-from .models import ACCData, ECGData, HRData, MeasurementSettings, PPIData
+from .models import ACCData, ECGData, HRData, MeasurementSettings, PPGData, PPIData
 
 
 class PolarDevice:
     ECGCallback: TypeAlias = Callable[[ECGData], None]
     ACCCallback: TypeAlias = Callable[[ACCData], None]
     PPICallback: TypeAlias = Callable[[PPIData], None]
+    PPGCallback: TypeAlias = Callable[[PPGData], None]
     HRCallback: TypeAlias = Callable[[HRData], None]
 
     _client: BleakClient
@@ -21,6 +22,7 @@ class PolarDevice:
     _ecg_callback: ECGCallback | None = None
     _acc_callback: ACCCallback | None = None
     _ppi_callback: PPICallback | None = None
+    _ppg_callback: PPGCallback | None = None
     _hr_callback: HRCallback | None = None
 
     def __init__(self, address_or_ble_device: str | BLEDevice) -> None:
@@ -138,6 +140,30 @@ class PolarDevice:
             bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPI.value]),
         )
 
+    async def start_ppg_stream(self, ppg_callback: PPGCallback, sample_rate: int, resolution: int, channels: int) -> None:
+        """Start PPG data stream."""
+        ppg_settings = MeasurementSettings(
+            measurement_type=PmdMeasurementType.PPG,
+            settings=[
+                MeasurementSettings.SettingType(type=PmdSettingType.SAMPLE_RATE, values=[sample_rate]),
+                MeasurementSettings.SettingType(type=PmdSettingType.RESOLUTION, values=[resolution]),
+                MeasurementSettings.SettingType(type=PmdSettingType.CHANNELS, values=[channels]),
+            ],
+        )
+        self._ppg_callback = ppg_callback
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            ppg_settings.to_bytes(),
+        )
+
+    async def stop_ppg_stream(self) -> None:
+        """Stop PPG data stream."""
+        self._ppg_callback = None
+        await self._client.write_gatt_char(
+            PolarCharacteristic.PMD_CONTROL_POINT.value,
+            bytearray([PmdControlOperationCode.STOP, PmdMeasurementType.PPG.value]),
+        )
+
     async def start_hr_stream(self, hr_callback: HRCallback) -> None:
         """Start heart rate data stream."""
         self._hr_callback = hr_callback
@@ -168,6 +194,8 @@ class PolarDevice:
                 self._acc_callback(parsed_data)
             case PPIData() if self._ppi_callback:
                 self._ppi_callback(parsed_data)
+            case PPGData() if self._ppg_callback:
+                self._ppg_callback(parsed_data)
             case _:
                 return
 
