@@ -1,5 +1,5 @@
 from ..constants import PmdMeasurementType
-from ..models import ACCData, ECGData, PmdDataFrame, SensorData
+from ..models import ACCData, ECGData, PmdDataFrame, PPGData, SensorData
 
 
 def parse_polar_data(data: bytearray) -> SensorData | None:
@@ -12,7 +12,7 @@ def parse_polar_data(data: bytearray) -> SensorData | None:
         case PmdMeasurementType.ACC:
             return ACCData.from_dataframe(data_frame)
         case PmdMeasurementType.PPG:
-            # return parse_ppg_data(data_frame)
+            return PPGData.from_dataframe(data_frame)
             pass
         case PmdMeasurementType.PPI:
             # return parse_ppi_data(data_frame)
