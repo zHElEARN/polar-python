@@ -33,6 +33,8 @@ def parse_raw_ppg_data(data: bytearray, timestamp: int, frame_type: int) -> PPGD
                     val = int.from_bytes(data[i + c * step : i + (c + 1) * step], byteorder="little", signed=True)
                     samples.append(val)
                 ppg_samples.append(samples)
+    else:
+        raise ValueError(f"Unsupported raw PPG frame type: {frame_type}")
 
     return PPGData(timestamp=timestamp, samples=ppg_samples, type=ppg_type)
 
@@ -48,31 +50,6 @@ def parse_compressed_ppg_data(data: Sequence[int], timestamp: int, frame_type: i
         resolution_bits = 24
         samples = parse_delta_frames_all(data[10:], channels, resolution_bits, "signed_int")
         ppg_samples = samples
-    elif frame_type == 7:
-        ppg_type = PPGData.PPGType.PPG3
-        channels = 17
-        resolution_bits = 24
-        samples = parse_delta_frames_all(data[10:], channels, resolution_bits, "signed_int")
-        ppg_samples = apply_factor(samples, factor)
-    elif frame_type == 8:
-        # PPG24 + Status
-        channels = 25
-        resolution_bits = 24
-        samples = parse_delta_frames_all(data[10:], channels, resolution_bits, "signed_int")
-        ppg_samples = apply_factor([s[:24] for s in samples], factor)  # Extract first 24 channels
-    elif frame_type == 10:
-        # PPG20 + Status
-        channels = 21
-        resolution_bits = 24
-        samples = parse_delta_frames_all(data[10:], channels, resolution_bits, "signed_int")
-        ppg_samples = apply_factor([s[:20] for s in samples], factor)
-    elif frame_type == 13:
-        # PPG2 + Status
-        ppg_type = PPGData.PPGType.PPG1
-        channels = 3
-        resolution_bits = 24
-        samples = parse_delta_frames_all(data[10:], channels, resolution_bits, "signed_int")
-        ppg_samples = apply_factor([s[:2] for s in samples], factor)
     else:
         raise ValueError(f"Unsupported compressed PPG frame type: {frame_type}")
 

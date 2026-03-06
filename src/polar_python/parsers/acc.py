@@ -52,6 +52,8 @@ def parse_raw_acc_data(data: bytearray, timestamp: int, frame_type: int) -> ACCD
                 y = int.from_bytes(data[i + step : i + 2 * step], byteorder="little", signed=True)
                 z = int.from_bytes(data[i + 2 * step : i + 3 * step], byteorder="little", signed=True)
                 acc_data.append((x, y, z))
+    else:
+        raise ValueError(f"Unsupported raw frame type: {frame_type}")
 
     return ACCData(timestamp=timestamp, data=acc_data)
 
