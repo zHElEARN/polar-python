@@ -4,7 +4,7 @@
 [![Python versions](https://img.shields.io/pypi/pyversions/polar-python.svg)](https://pypi.org/project/polar-python/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-`polar-python` is an asynchronous Python library designed for integration with Polar devices using Bluetooth Low Energy (BLE). Powered by the `bleak` library, `polar-python` abstracts the complexity of Polar's binary protocols, allowing developers to easily connect, configure, and stream real-time physiological and kinematic data directly into structured Python objects via callback functions.
+`polar-python` is an asynchronous Python library designed for integration with Polar devices using Bluetooth Low Energy (BLE). Powered by the `bleak` library, `polar-python` abstracts the complexity of Polar's binary protocols, allowing developers to easily connect, configure, and stream real-time physiological and kinematic data directly into structured Python objects via callback functions. The codebase is fully type-hinted and passes strict static type checks. Additionally, all public functions and classes include comprehensive docstrings for better developer experience and IDE support.
 
 > [!CAUTION]
 > **Breaking Changes:** Current versions (1.x.x+) are **incompatible** with older `0.0.x` versions. The API has undergone significant architectural changes. New users can proceed normally; existing users should refer to the [examples](examples/) section to migrate their code.
