@@ -8,6 +8,7 @@ class PPIData:
     """Represents Peak-to-Peak Interval (PPI) measurement data.
 
     Attributes:
+        timestamp: The UNIX timestamp in nanoseconds.
         samples: A list of PPISample objects containing the interval data.
     """
 
@@ -32,6 +33,7 @@ class PPIData:
         skin_contact_supported: bool
         # timestamp: int
 
+    timestamp: int
     samples: list[PPISample]
 
     PPI_SAMPLE_CHUNK = 6
@@ -112,4 +114,4 @@ class PPIData:
                     )
                 )
 
-        return cls(samples=final_samples)
+        return cls(samples=final_samples, timestamp=frame.timestamp)
