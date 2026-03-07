@@ -6,7 +6,7 @@ from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 
 class CalibrationStatus(IntEnum):
-    """Represents the calibration status of the magnetometer."""
+    """Enumeration of magnetometer calibration statuses."""
 
     NOT_AVAILABLE = -1
     UNKNOWN = 0
@@ -16,6 +16,14 @@ class CalibrationStatus(IntEnum):
 
     @classmethod
     def get_by_id(cls, status_id: int) -> "CalibrationStatus":
+        """Retrieves the calibration status by its integer ID.
+
+        Args:
+            status_id: The integer ID representing the status.
+
+        Returns:
+            The corresponding CalibrationStatus enum, or NOT_AVAILABLE if the ID is invalid.
+        """
         try:
             return cls(status_id)
         except ValueError:
@@ -24,7 +32,14 @@ class CalibrationStatus(IntEnum):
 
 @dataclass
 class MAGSample:
-    """Represents a single magnetometer sample."""
+    """Represents a single magnetometer measurement sample.
+
+    Attributes:
+        x: The magnetometer measurement for the x-axis in Gauss.
+        y: The magnetometer measurement for the y-axis in Gauss.
+        z: The magnetometer measurement for the z-axis in Gauss.
+        calibration_status: The current calibration status of the magnetometer.
+    """
 
     x: float
     y: float
@@ -34,7 +49,13 @@ class MAGSample:
 
 @dataclass
 class MAGData:
-    """Represents magnetometer data."""
+    """Represents a batch of magnetometer measurement data.
+
+    Attributes:
+        timestamp: The UNIX timestamp in milliseconds.
+        data: A list of MAGSample objects containing the axis measurements in Gauss
+            and their calibration status.
+    """
 
     timestamp: int
     data: list[MAGSample]

@@ -6,7 +6,13 @@ from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 @dataclass
 class GyroData:
-    """Represents gyroscope data."""
+    """Represents gyroscope measurement data.
+
+    Attributes:
+        timestamp: The UNIX timestamp in nanoseconds.
+        data: A list of tuples containing the x, y, and z axis rotation rates in degrees per second (deg/s).
+            Each tuple is structured as (x: float, y: float, z: float).
+    """
 
     timestamp: int
     data: list[tuple[float, float, float]]

@@ -5,7 +5,12 @@ from .pmd_data_frame import PmdDataFrame
 
 @dataclass
 class ECGData:
-    """Represents ECG data."""
+    """Represents electrocardiogram measurement data.
+
+    Attributes:
+        timestamp: The UNIX timestamp in nanoseconds.
+        data: A list of ECG measurement values in microvolts (µV).
+    """
 
     timestamp: int
     data: list[int]

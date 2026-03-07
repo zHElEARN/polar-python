@@ -6,7 +6,13 @@ from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 @dataclass
 class ACCData:
-    """Represents accelerometer data."""
+    """Represents accelerometer measurement data.
+
+    Attributes:
+        timestamp: The UNIX timestamp in nanoseconds.
+        data: A list of tuples containing the x, y, and z axis values in milli-g (mG).
+            Each tuple is structured as (x: int, y: int, z: int).
+    """
 
     timestamp: int
     data: list[tuple[int, int, int]]

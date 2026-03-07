@@ -5,11 +5,24 @@ from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 @dataclass
 class PPIData:
-    """Represents PPI (Peak-to-Peak Interval) data."""
+    """Represents Peak-to-Peak Interval (PPI) measurement data.
+
+    Attributes:
+        samples: A list of PPISample objects containing the interval data.
+    """
 
     @dataclass
     class PPISample:
-        """Represents a single PPI sample."""
+        """Represents a single Peak-to-Peak Interval (PPI) sample.
+
+        Attributes:
+            ppi: The peak-to-peak interval in milliseconds (ms).
+            error_estimate: The error estimate of the PPI measurement in milliseconds (ms).
+            hr: The calculated heart rate in beats per minute (BPM).
+            invalid_ppi: Indicates whether the PPI measurement is considered invalid.
+            skin_contact_status: Indicates whether the sensor has detected skin contact.
+            skin_contact_supported: Indicates whether the device supports skin contact detection.
+        """
 
         ppi: int
         error_estimate: int

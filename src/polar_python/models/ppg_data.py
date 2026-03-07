@@ -7,10 +7,18 @@ from .pmd_data_frame import PmdDataFrame, PmdDataFrameType
 
 @dataclass
 class PPGData:
-    """Represents photoplethysmogram data."""
+    """Represents photoplethysmography (PPG) measurement data.
+
+    Attributes:
+        timestamp: The UNIX timestamp in nanoseconds.
+        samples: A list representing multiple sampling moments. Each inner list contains
+            the raw values received from the optical sensor channels (e.g., PPG channels
+            and ambient light channels). The number of channels varies based on the PPGType.
+        type: The specific type/format of the PPG data.
+    """
 
     class PPGType(IntEnum):
-        """Enumeration of PPG data types."""
+        """Enumeration of the different PPG data formats provided by the optical sensor."""
 
         PPG1 = 1
         PPG3_AMBIENT1 = 4
