@@ -10,11 +10,31 @@ from ..constants import (
 
 @dataclass
 class MeasurementSettings:
-    """Represents measurement settings for a specific type."""
+    """Represents the configuration settings for a PMD data stream.
+
+    This data model is utilized for both sending configuration requests to the
+    Polar device and parsing the subsequent response. Consequently, attributes
+    like `error_code` and `more_frames` are typically only populated when this
+    object is constructed from a device response.
+
+    Attributes:
+        measurement_type: The specific type of measurement stream (e.g., ECG, ACC).
+        settings: A list of SettingType objects defining the stream's configuration.
+        error_code: An optional error code returned by the device response.
+        more_frames: An optional flag indicating if the device response spans multiple frames.
+    """
 
     @dataclass
     class SettingType:
-        """Represents a setting type with its array length and possible values."""
+        """Represents an individual configuration setting and its values.
+
+        Attributes:
+            type: The specific setting being configured (e.g., sample rate, resolution).
+            values: A list of integer values associated with this setting.
+                When sending a configuration request to the device, this list typically
+                contains only a single chosen value. However, when receiving available
+                settings from the device, this list may contain one or multiple supported values.
+        """
 
         type: PmdSettingType
         values: list[int]
