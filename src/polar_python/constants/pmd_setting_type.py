@@ -9,6 +9,11 @@ class PmdSettingType(IntEnum):
     CHANNELS = 4
     FACTOR = 5
     SECURITY = 6
+    UNKNOWN = 255
+
+    @classmethod
+    def _missing_(cls, _unused_value):
+        return cls.UNKNOWN
 
     @property
     def field_size(self) -> int:

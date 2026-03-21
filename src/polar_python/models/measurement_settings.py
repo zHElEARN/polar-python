@@ -62,19 +62,29 @@ class MeasurementSettings:
         settings = []
         index = 5
         while index < len(data):
+            if index + 1 >= len(data):
+                break
+
             setting_type_index = data[index]
             setting_type = PmdSettingType(setting_type_index)
+            if setting_type == PmdSettingType.UNKNOWN:
+                break
+
             array_length = data[index + 1]
             field_size = setting_type.field_size
+
+            if index + 2 + field_size * array_length > len(data):
+                break
+
             setting_values = []
             for i in range(array_length):
                 start_pos = index + 2 + i * field_size
                 end_pos = start_pos + field_size
-                if end_pos <= len(data):
-                    if field_size == 1:
-                        setting_values.append(data[start_pos])
-                    else:
-                        setting_values.append(int.from_bytes(data[start_pos:end_pos], "little"))
+                if field_size == 1:
+                    setting_values.append(data[start_pos])
+                else:
+                    setting_values.append(int.from_bytes(data[start_pos:end_pos], "little"))
+
             settings.append(cls.SettingType(type=setting_type, values=setting_values))
             index += 2 + field_size * array_length
 
