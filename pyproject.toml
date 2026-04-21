@@ -49,3 +49,4 @@ ignore = ["E501"]
 
 [tool.ruff.lint.per-file-ignores]
 "src/polar_python/cli.py" = ["E402"]
+"src/polar_python/__main__.py" = ["E402"]

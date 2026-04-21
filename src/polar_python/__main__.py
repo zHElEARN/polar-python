@@ -1,18 +1,34 @@
 import argparse
 import asyncio
+import importlib.util
 import json
+import sys
 from dataclasses import asdict
 from typing import Any
 
 from bleak import BleakScanner
 from bleak.backends.device import BLEDevice
-from rich.console import Console
-from rich.panel import Panel
-from rich.table import Table
 
 from . import PolarDevice
 from .constants import PmdMeasurementType
 from .models import ACCData, ECGData, GyroData, HRData, MAGData, MeasurementSettings, PPGData, PPIData
+
+
+def check_dependencies() -> None:
+    if importlib.util.find_spec("rich") is not None:
+        return
+
+    print("Error: Missing optional dependency: rich")
+    print("To use the CLI tool, please install the library with 'cli' extras:")
+    print('pip install "polar-python[cli]"')
+    sys.exit(1)
+
+
+check_dependencies()
+
+from rich.console import Console
+from rich.panel import Panel
+from rich.table import Table
 
 console = Console()
 
@@ -133,7 +149,10 @@ async def inspect_device(
     as_json: bool,
 ) -> int:
     if not any([address, name, name_contains]):
-        console.print("[bold red]One of --address, --name, or --name-contains is required.[/bold red]")
+        if as_json:
+            print(json.dumps({"error": "One of --address, --name, or --name-contains is required."}, ensure_ascii=False))
+        else:
+            console.print("[bold red]One of --address, --name, or --name-contains is required.[/bold red]")
         return 1
 
     if as_json:
