@@ -353,7 +353,15 @@ class PolarDevice:
         await self._client.stop_notify(PolarCharacteristic.HEART_RATE.value)
 
     def _handle_pmd_control(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
-        """Places incoming PMD control notifications into the async queue."""
+        """Queue only PMD control point responses.
+
+        On BlueZ, reading the PMD control point while notifications are enabled can
+        also surface the feature packet as a notification. Those packets start with
+        ``0x0F`` and must not be mixed into the control point response queue.
+        """
+        if not data or data[0] != 0xF0:
+            return
+
         self._queue_pmd_control.put_nowait(data)
 
     def _handle_pmd_data(self, _: BleakGATTCharacteristic | int, data: bytearray) -> None:
